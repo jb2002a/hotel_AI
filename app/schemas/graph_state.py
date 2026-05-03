@@ -5,7 +5,7 @@ class AgentState(TypedDict):
     customer_email: str
 
     # 분류 정보
-    category: Literal["reservation", "inquiry", "simple"]
+    category: Literal["reservation", "inquiry", "request", "critical", "spam"]
     entities: dict # 추출된 정보 (예약번호, 날짜 등)
     
     # 검색된 지식/데이터
