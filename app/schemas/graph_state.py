@@ -12,12 +12,19 @@ class EmailClassification(TypedDict):
     category: Literal["reservation", "inquiry", "request", "spam"]
     urgency: Literal["low", "medium", "high", "critical"]
 
+# 계획 수행 결과 (필요한 단계 목록; 순서는 실행 순서)
+class PlanAction(TypedDict):
+    actions: list[Literal["retriever", "read", "create", "update", "delete"]]
+
 class EmailAgentState(TypedDict):
     # 고객의 이메일 데이터
     email_data: EmailData
 
     # 이메일 분류 결과
     classification: EmailClassification | None
+
+    # 플랜 노드 출력 (필요 액션 목록)
+    plan: PlanAction | None
 
     # 저장소 (RAG, CRM) 검색 결과
     search_results: list[str] | None
