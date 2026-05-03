@@ -27,7 +27,7 @@ def read_email(state: EmailAgentState) -> EmailData:
         sender_email=mock_data["sender_email"]
     )
     
-    return email_data
+    return {"email_data": email_data}
 
 
 def classify_intent(state: EmailAgentState) -> EmailClassification:
@@ -50,7 +50,7 @@ def classify_intent(state: EmailAgentState) -> EmailClassification:
     # 래퍼에 맞춰서 구조화된 응답 받기
     classification = structured_llm.invoke(classification_prompt)
     
-    return classification
+    return {"classification": classification}
     
 if __name__ == "__main__":
     # python -m app.graphs.nodes.classification_node

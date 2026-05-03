@@ -22,7 +22,7 @@ def plan_action(state: EmailAgentState) -> dict:
     """
 
     plan = structured_llm.invoke(plan_action_prompt)
-    return plan
+    return {"plan": plan}
 
 if __name__ == "__main__":
     # python -m app.graphs.nodes.plan_node
