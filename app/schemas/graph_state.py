@@ -1,26 +1,30 @@
 from typing import Literal, TypedDict
 
-CATEGORY_LIST = ["reservation", "inquiry", "request", "critical", "spam"]
 
-class AgentState(TypedDict):
-    # 입력 데이터
-    customer_email: str
+# 고객의 이메일 데이터 래퍼
+class EmailData(TypedDict):
+    email_subject: str
+    email_content: str
+    sender_email: str
 
-    # 분류 정보
-    category: Literal[CATEGORY_LIST]
-    entities: dict # 추출된 정보 (예약번호, 날짜 등)
-    
-    # 검색된 지식/데이터
-    retrieved_docs: list # 규정집 검색 결과
-    db_data: dict        # DB 조회 결과
-    
-    # 액션
-    draft_email: str     # 작성된 답장 초안
-    action_payload: dict # DB 반영용 JSON (예: {"update": "check_in_date", "value": "2026-05-10"})
-    
-    # 제어 변수
-    is_approved: bool    # 승인 여부
-    error_log: str       # 에러 발생 시 기록
+# 이메일 분류 결과 래퍼
+class EmailClassification(TypedDict):
+    category: Literal["reservation", "inquiry", "request", "spam"]
+    urgency: Literal["low", "medium", "high", "critical"]
 
+class EmailAgentState(TypedDict):
+    # 고객의 이메일 데이터
+    email_data: EmailData
+
+    # 이메일 분류 결과
+    classification: EmailClassification | None
+
+    # 저장소 (RAG, CRM) 검색 결과
+    search_results: list[str] | None
+    customer_history: dict | None
+
+    # 생성된 내용
+    draft_response: str | None
+    messages: list[str] | None
 
 
