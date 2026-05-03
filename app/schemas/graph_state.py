@@ -1,11 +1,13 @@
 from typing import Literal, TypedDict
 
+CATEGORY_LIST = ["reservation", "inquiry", "request", "critical", "spam"]
+
 class AgentState(TypedDict):
     # 입력 데이터
     customer_email: str
 
     # 분류 정보
-    category: Literal["reservation", "inquiry", "request", "critical", "spam"]
+    category: Literal[CATEGORY_LIST]
     entities: dict # 추출된 정보 (예약번호, 날짜 등)
     
     # 검색된 지식/데이터
@@ -19,5 +21,6 @@ class AgentState(TypedDict):
     # 제어 변수
     is_approved: bool    # 승인 여부
     error_log: str       # 에러 발생 시 기록
+
 
 
