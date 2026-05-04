@@ -7,5 +7,6 @@ load_dotenv(override=True)
 BASE_DIR = pathlib.Path(__file__).parent.parent.parent
 
 USER_MOCK_DATA_PATH = BASE_DIR / "resoruces" / "mock_data.json"
+DOCX_DATA_PATH = BASE_DIR / "resoruces" / "호텔 이용 및 환불 규정집.docx"
 
 LLM = ChatOpenAI(model="gpt-4o-mini")
