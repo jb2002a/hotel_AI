@@ -1,6 +1,8 @@
 from app.schemas.graph_state import EmailAgentState, PlanAction
 from app.config.config import LLM
 
+
+
 def plan_action(state: EmailAgentState) -> dict:
     email_data = state['email_data']
 
@@ -23,6 +25,13 @@ def plan_action(state: EmailAgentState) -> dict:
 
     plan = structured_llm.invoke(plan_action_prompt)
     return {"plan": plan}
+
+
+
+
+
+
+
 
 if __name__ == "__main__":
     # python -m app.graphs.nodes.plan_node

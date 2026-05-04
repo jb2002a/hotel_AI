@@ -54,19 +54,7 @@ def classify_intent(state: EmailAgentState) -> EmailClassification:
     
 if __name__ == "__main__":
     # python -m app.graphs.nodes.classification_node
-    state: EmailAgentState = {
-        "email_data": {
-            "email_subject": "",
-            "email_content": "",
-            "sender_email": "",
-        },
-        "classification": None,
-        "plan": None,
-        "search_results": None,
-        "customer_history": None,
-        "draft_response": None,
-        "messages": None,
-    }
+    state = EmailAgentState()
     
     email_data = read_email(state)
     state["email_data"] = email_data
