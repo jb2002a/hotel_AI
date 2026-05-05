@@ -59,6 +59,8 @@ coverage.xml
 nosetests.xml
 .tox/
 .nox/
+*.bin
+*.sqlite3
 
 # Jupyter
 .ipynb_checkpoints/
@@ -66,3 +68,4 @@ nosetests.xml
 # 커서 룰(mdc)
 rules/global-baseline.mdc
 .cursor/rules/commit-message-ko.mdc
+
