@@ -34,6 +34,5 @@ class EmailAgentState(TypedDict):
 
     # 생성된 내용
     draft_response: str | None
-    messages: list[str] | None
 
 
