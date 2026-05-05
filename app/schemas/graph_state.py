@@ -1,3 +1,6 @@
+# V1 플로우 
+# read_email -> classification -> plan -> (retrieve?) -> draft -> (approval?) -> execution -> END
+
 from typing import Literal, TypedDict
 
 
@@ -14,7 +17,7 @@ class EmailClassification(TypedDict):
 
 # 계획 수행 결과 (필요한 단계 목록; 순서는 실행 순서)
 class PlanAction(TypedDict):
-    actions: list[Literal["retriever", "read", "create", "update", "delete"]]
+    actions: list[Literal["retrieve"]]
 
 class EmailAgentState(TypedDict):
     # 고객의 이메일 데이터
