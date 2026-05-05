@@ -1,4 +1,7 @@
 # 1. 분류 노드
+
+# 스팸을 분류하고, 긴급성이 높은것은 바로 approval_node로 넘김
+
 import json
 from typing import Literal
 from langgraph.graph import StateGraph, START, END
@@ -11,7 +14,6 @@ from app.config.config import USER_MOCK_DATA_PATH, LLM
 _TEST_IDX = 15
 
 def read_email(state: EmailAgentState) -> EmailData:
-    """Extract and parse email content"""
     # TODO: 현재는 mock 데이터와 임시적으로 연결, 실제 이메일 서비스와 연동 필요
 
     # json은 emails내에 subject,body,sender_email,category 필드가 있음 (카테고리는 평가용으로 적어둠, 사용x)
@@ -31,9 +33,6 @@ def read_email(state: EmailAgentState) -> EmailData:
 
 
 def classify_intent(state: EmailAgentState) -> EmailClassification:
-
-    """Use LLM to classify email intent and urgency, then route accordingly"""
-
     # 래퍼에 맞춰서 structured_llm 생성
     structured_llm = LLM.with_structured_output(EmailClassification)
 

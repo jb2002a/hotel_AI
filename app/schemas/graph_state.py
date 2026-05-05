@@ -9,8 +9,8 @@ class EmailData(TypedDict):
 
 # 이메일 분류 결과 래퍼
 class EmailClassification(TypedDict):
-    category: Literal["reservation", "inquiry", "request", "spam"]
-    urgency: Literal["low", "medium", "high", "critical"]
+    category: Literal["normal", "spam"]
+    urgency: Literal["normal", "high"]
 
 # 계획 수행 결과 (필요한 단계 목록; 순서는 실행 순서)
 class PlanAction(TypedDict):

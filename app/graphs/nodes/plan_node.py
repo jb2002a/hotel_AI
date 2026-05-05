@@ -14,7 +14,7 @@ def plan_action(state: EmailAgentState) -> dict:
     plan_action_prompt = f"""From the email subject and body, list every step needed to handle the request.
 
     Use these actions only:
-    - **retriever**: vector DB search (policies, FAQs, unstructured knowledge).
+    - **retriever**: vector DB search (policies, FAQs).
     - **read**, **create**, **update**, **delete**: ORM operations on relational data (load, insert, change, remove records).
 
     Include all that clearly apply. Put **retriever** (and **read** if needed) before mutating (**create** / **update** / **delete**) when context or current rows are required. Omit steps that are not justified by the email.
