@@ -15,27 +15,32 @@ async def upload_and_parse_document():
     return file_obj
 
 @traceable(name="parse_document")
-async def parse_document(file_obj):
+async def parse_document(file_obj) -> str:
     result = await client.parsing.parse(
     file_id=file_obj.id,
     tier="cost_effective",
     version="latest",
-    expand=["items"],
+    expand=["markdown"],
 
     )
-    return result
+    pages = getattr(getattr(result, "markdown", None), "pages", None) or []
+    markdown_context = "\n\n".join(
+        page.markdown.strip()
+        for page in pages
+        if getattr(page, "success", True) and getattr(page, "markdown", None)
+    )
 
-@traceable(name="main")
-async def main():
+    return markdown_context
+
+@traceable(name="parsing_pipeline")
+async def parsing_pipeline() -> str:
     file_obj = await upload_and_parse_document()
     result = await parse_document(file_obj)
-    print("done")
-
-
-# TODO : 파싱한 데이터 헤더 전처리
+    return result
 
 if __name__ == "__main__":
     # python -m app.rag.vector_db
-    asyncio.run(main())
+    result = asyncio.run(parsing_pipeline())
+
 
 
