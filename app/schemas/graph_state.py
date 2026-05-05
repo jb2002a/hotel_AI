@@ -2,7 +2,7 @@
 # read_email -> classification -> plan -> (retrieve?) -> draft -> (approval?) -> execution -> END
 
 from typing import Literal, TypedDict
-
+from langchain_core.documents import Document
 
 # 고객의 이메일 데이터 래퍼
 class EmailData(TypedDict):
@@ -29,9 +29,8 @@ class EmailAgentState(TypedDict):
     # 플랜 노드 출력 (필요 액션 목록)
     plan: PlanAction | None
 
-    # 저장소 (RAG, CRM) 검색 결과
-    search_results: list[str] | None
-    customer_history: dict | None
+    # RAG 검색 결과
+    search_results: list[Document] | None
 
     # 생성된 내용
     draft_response: str | None
