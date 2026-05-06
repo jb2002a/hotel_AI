@@ -60,7 +60,6 @@ nosetests.xml
 .tox/
 .nox/
 *.bin
-*.sqlite3
 
 # Jupyter
 .ipynb_checkpoints/
@@ -69,4 +68,4 @@ nosetests.xml
 rules/global-baseline.mdc
 .cursor/rules/commit-message-ko.mdc
 
-chroma_db/chroma.sqlite3
+

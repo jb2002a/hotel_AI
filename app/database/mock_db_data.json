@@ -1,0 +1,31 @@
+
+{
+  "members": [
+    { "id": 1, "email": "park.damin@example.com", "name": "박다민" },
+    { "id": 2, "email": "leo.kim@example.com", "name": "김리오" },
+    { "id": 3, "email": "guest.service@example.com", "name": "이용국" }
+  ],
+  "room_booking": [
+    {
+      "room_number": 109,
+      "member_id": 1,
+      "status": "occupied",
+      "check_in": "2026-08-02",
+      "check_out": "2026-08-06"
+    },
+    {
+      "room_number": 207,
+      "member_id": 2,
+      "status": "occupied",
+      "check_in": "2026-09-11",
+      "check_out": "2026-09-14"
+    },
+    {
+      "room_number": 308,
+      "member_id": 3,
+      "status": "occupied",
+      "check_in": "2026-10-24",
+      "check_out": "2026-10-27"
+    }
+  ]
+}
