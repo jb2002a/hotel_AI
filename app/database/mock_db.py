@@ -1,8 +1,7 @@
 
 import sqlite3
-from pathlib import Path
 
-DB_PATH = Path(__file__).resolve().parent / "mock_hotel.db"
+from app.config.config import DB_PATH
 
 CREATE_MEMBERS_SQL = """
 CREATE TABLE IF NOT EXISTS members (
