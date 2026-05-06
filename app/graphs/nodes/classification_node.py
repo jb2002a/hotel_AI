@@ -3,7 +3,7 @@ from app.schemas.graph_state import EmailAgentState, EmailClassification, EmailD
 from app.config.config import USER_MOCK_DATA_PATH, LLM
 from langsmith import traceable
 
-_TEST_IDX = 20
+_TEST_IDX = 8
 
 @traceable(name="read_email")
 def read_email(state: EmailAgentState) -> dict:
@@ -24,8 +24,8 @@ def read_email(state: EmailAgentState) -> dict:
 
     return {"email_data": email_data}
 
-@traceable(name="classify_intent")
-def classify_intent(state: EmailAgentState) -> dict:
+@traceable(name="classify_node")
+def classify_node(state: EmailAgentState) -> dict:
     # 래퍼에 맞춰서 structured_llm 생성
     structured_llm = LLM.with_structured_output(EmailClassification)
 
