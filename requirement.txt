@@ -1,11 +1,10 @@
-langgraph>=0.2.0
-langchain>=0.3.0
-langchain-openai>=0.2.0
+langgraph
+langchain
+langchain-openai
 langchain_community
-lama-index-embeddings-huggingface
 langchain-chroma
 langchain_huggingface
 langsmith
 dotenv
-
+sentence-transformers
 llama_cloud

@@ -11,14 +11,16 @@ def plan_action(state: EmailAgentState) -> dict:
 
     structured_llm = LLM.with_structured_output(PlanAction)
 
-    plan_action_prompt = f"""Decide whether retrieval is needed to answer this email.
+    plan_action_prompt = f"""Decide what retrieval is needed to answer this email.
 
-    Return actions using only this schema:
-    - "retrieve": use vector DB search (policies, FAQs)
+    Return actions using only these names (execution order when both: vector_retrieve, then db_retrieve):
+    - "vector_retrieve": vector DB / RAG search (policies, FAQs, general knowledge base)
+    - "db_retrieve": member and room booking lookup for the sender email (SQLite)
 
     Rules:
-    - If retrieval is needed, return actions as ["retrieve"].
-    - If retrieval is not needed, return actions as [].
+    - Use "vector_retrieve" when policy/FAQ/general hotel info from the knowledge base is needed.
+    - Use "db_retrieve" when the reply needs the sender's membership or reservation data.
+    - You may return both, one, or neither. Examples: [], ["vector_retrieve"], ["db_retrieve"], ["vector_retrieve", "db_retrieve"].
     - Do not return any other action names.
 
     Subject: {subject}

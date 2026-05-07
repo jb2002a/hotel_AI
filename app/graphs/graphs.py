@@ -1,11 +1,13 @@
 # app/graphs/main_graph.py (예시)
 from typing import Literal
+
 from langgraph.graph import StateGraph, START, END
+from langgraph.types import Send
 from app.schemas.graph_state import EmailAgentState
 from app.graphs.nodes.classification_node import read_email, classify_node
 from app.graphs.nodes.approval_node import approval_node
 from app.graphs.nodes.plan_node import plan_action
-from app.graphs.nodes.retrieve_node import retrieve_from_vector_store
+from app.graphs.nodes.retrieve_node import vector_retrieve, db_retrieve
 from app.graphs.nodes.draft_node import draft_node
 
 
@@ -23,12 +25,16 @@ def route_after_classification(
 
 def route_after_plan(
     state: EmailAgentState,
-) -> Literal["retrieve_node", "draft_node"]:
+) -> list[Send] | Literal["draft_node"]:
     plan = state.get("plan")
     actions = plan.get("actions", []) if plan else []
-    if "retrieve" in actions:
-        return "retrieve_node"
-    return "draft_node"
+    sends: list[Send] = []
+    if "vector_retrieve" in actions:
+        sends.append(Send("vector_retrieve_node", state))
+    if "db_retrieve" in actions:
+        sends.append(Send("db_retrieve_node", state))
+    return sends if sends else "draft_node"
+
 
 graph = StateGraph(EmailAgentState)
 
@@ -36,7 +42,8 @@ graph.add_node("read_email_node", read_email)
 graph.add_node("classification_node", classify_node)
 graph.add_node("approval_node", approval_node)
 graph.add_node("plan_node", plan_action)
-graph.add_node("retrieve_node", retrieve_from_vector_store)
+graph.add_node("vector_retrieve_node", vector_retrieve)
+graph.add_node("db_retrieve_node", db_retrieve)
 graph.add_node("draft_node", draft_node)
 
 graph.add_edge(START, "read_email_node")
@@ -53,7 +60,8 @@ graph.add_conditional_edges(
     route_after_plan,
 )
 
-graph.add_edge("retrieve_node", "draft_node")
+graph.add_edge("vector_retrieve_node", "draft_node")
+graph.add_edge("db_retrieve_node", "draft_node")
 graph.add_edge("draft_node", END)
 
 
@@ -62,11 +70,15 @@ if __name__ == "__main__":
     compiled_graph = graph.compile()
     result = compiled_graph.invoke(
         {
-            "email_data": None,
+            "email_data": {
+                "email_subject": "",
+                "email_content": "",
+                "sender_email": "",
+            },
             "classification": None,
             "plan": None,
-            "search_results": None,
+            "vector_retrieve_results": None,
+            "db_retrieve_results": None,
             "draft_response": None,
         }
     )
-    print(result)

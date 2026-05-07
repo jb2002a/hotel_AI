@@ -1,4 +1,4 @@
-# 답변 생성 노드, search_results가 있으면 참조.
+# 답변 생성 노드, vector_retrieve / db_retrieve 결과가 있으면 참조.
 
 from app.schemas.graph_state import EmailAgentState
 from langsmith import traceable
@@ -9,7 +9,20 @@ _tem_manager_name = "김아영"
 
 @traceable(name="draft_node")
 def draft_node(state: EmailAgentState) -> dict:
-    search_results = state["search_results"] if state["search_results"] else []
+    vector_docs = state["vector_retrieve_results"]
+    db_payload = state["db_retrieve_results"]
+
+    vector_block = (
+        "\n".join(d.page_content for d in vector_docs) if vector_docs else ""
+    )
+    db_block = str(db_payload) if db_payload is not None else ""
+
+    context_parts: list[str] = []
+    if vector_block:
+        context_parts.append(f"[벡터 검색 근거]\n{vector_block}")
+    if db_block:
+        context_parts.append(f"[DB 조회(회원/예약)]\n{db_block}")
+    search_results = "\n\n".join(context_parts) if context_parts else "(없음)"
 
     email_data = state["email_data"]
 
@@ -24,11 +37,11 @@ def draft_node(state: EmailAgentState) -> dict:
     제목: {email_subject}
     본문: {email_content}
 
-    [입력 - 검색 근거(top-k)]
+    [입력 - 검색 근거]
     {search_results}
 
     작성 규칙:
-    1) 검색 근거(top-k)에 있는 정보가 관련 있으면 반드시 우선 반영하세요.
+    1) 검색 근거에 있는 정보가 관련 있으면 반드시 우선 반영하세요.
     2) 근거에 없는 사실은 단정하지 말고, 확인이 필요하다고 명시하세요.
     3) 반드시 한국어로 작성하고, 공손하고 전문적인 비즈니스 톤을 유지하세요.
     4) 아래 이메일 템플릿 구조를 반드시 지키세요.

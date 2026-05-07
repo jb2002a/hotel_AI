@@ -1,5 +1,11 @@
 [
   {
+    "subject": "여러가지 문의 관련 ",
+    "category": "unknowns",
+    "sender_email": "park.damin@example.com",
+    "body": "제가 예약한 정보를 알고싶어요."
+  },
+  {
     "subject": "5월 15일~17일 스탠다드 더블 2박 예약 가능 여부",
     "category": "reservation",
     "sender_email": "minji.kim@example.com",

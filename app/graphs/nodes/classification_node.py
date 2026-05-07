@@ -3,7 +3,7 @@ from app.schemas.graph_state import EmailAgentState, EmailClassification, EmailD
 from app.config.config import USER_MOCK_DATA_PATH, LLM
 from langsmith import traceable
 
-_TEST_IDX = 8
+_TEST_IDX = 0
 
 @traceable(name="read_email")
 def read_email(state: EmailAgentState) -> dict:
