@@ -9,6 +9,7 @@ from app.graphs.nodes.approval_node import approval_node
 from app.graphs.nodes.plan_node import plan_action
 from app.graphs.nodes.retrieve_node import vector_retrieve, db_retrieve
 from app.graphs.nodes.draft_node import draft_node
+from app.graphs.nodes.execution_node import send_email_node
 
 
 def route_after_classification(
@@ -45,6 +46,7 @@ graph.add_node("plan_node", plan_action)
 graph.add_node("vector_retrieve_node", vector_retrieve)
 graph.add_node("db_retrieve_node", db_retrieve)
 graph.add_node("draft_node", draft_node)
+graph.add_node("send_email_node", send_email_node)
 
 graph.add_edge(START, "read_email_node")
 graph.add_edge("read_email_node", "classification_node")
@@ -62,7 +64,8 @@ graph.add_conditional_edges(
 
 graph.add_edge("vector_retrieve_node", "draft_node")
 graph.add_edge("db_retrieve_node", "draft_node")
-graph.add_edge("draft_node", END)
+graph.add_edge("draft_node", "send_email_node")
+graph.add_edge("send_email_node", END)
 
 
 if __name__ == "__main__":
