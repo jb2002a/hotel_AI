@@ -3,7 +3,6 @@ from collections.abc import Callable
 from typing import Any, Literal
 
 from langgraph.graph import StateGraph, START, END
-from langgraph.types import Send
 from app.errors import BusinessError
 from app.schemas.graph_state import EmailAgentState
 from app.graphs.nodes.control import approval_node
@@ -42,22 +41,34 @@ def route_after_classification(
         return "approval_node"
     return "plan_node"
 
+
+def route_after_read_email(
+    state: EmailAgentState,
+) -> Literal["classification_node", "approval_node"]:
+    # 이메일 읽기 실패 시 승인 프로세스로 전달
+    return "approval_node" if state.get("business_error") else "classification_node"
+
+
 def route_after_plan(
     state: EmailAgentState,
-) -> list[Send] | Literal["booking_plan_node", "draft_node", "approval_node"]:
+) -> (
+    list[Literal["vector_retrieve_node", "db_retrieve_node"]]
+    | Literal["booking_plan_node", "draft_node", "approval_node"]
+):
     if state.get("business_error"):
         return "approval_node"
 
     plan = state.get("plan")
     actions = plan.get("actions", []) if plan else []
-    sends: list[Send] = []
-    if "vector_retrieve" in actions:
-        sends.append(Send("vector_retrieve_node", state))
-    if "db_retrieve" in actions:
-        sends.append(Send("db_retrieve_node", state))
-    if sends:
-        return sends
 
+    retrieve_nodes: list[Literal["vector_retrieve_node", "db_retrieve_node"]] = []
+    if "vector_retrieve" in actions:
+        retrieve_nodes.append("vector_retrieve_node")
+    if "db_retrieve" in actions:
+        retrieve_nodes.append("db_retrieve_node")
+    if retrieve_nodes:
+        return retrieve_nodes
+    # retrieval이 필요 없는 경우에는 retrieval 이후 라우팅 규칙과 동일하게 처리
     return route_after_retrieve(state)
 
 
@@ -68,16 +79,28 @@ def route_after_retrieve(
         return "approval_node"
 
     plan = state.get("plan")
-    actions = set(plan.get("actions", []) if plan else [])
-    booking_actions = {
-        "reservation_create",
-        "reservation_update",
-        "reservation_delete",
-    }
-    return "booking_plan_node" if actions & booking_actions else "draft_node"
+    actions = plan.get("actions", []) if plan else []
+    has_booking_action = any(
+        action in actions
+        for action in ("reservation_create", "reservation_update", "reservation_delete")
+    )
+    return "booking_plan_node" if has_booking_action else "draft_node"
+
+
+def route_after_booking_plan(
+    state: EmailAgentState,
+) -> Literal["approval_node", "draft_node"]:
+    # 예약 처리 중 업무 예외 발생 시 승인으로 분기
+    return "approval_node" if state.get("business_error") else "draft_node"
+
+
+def route_after_draft(
+    state: EmailAgentState,
+) -> Literal["approval_node", "send_email_node"]:
+    # 답변 초안 생성 실패 시 승인으로 분기
+    return "approval_node" if state.get("business_error") else "send_email_node"
 
 graph = StateGraph(EmailAgentState)
-
 graph.add_node("read_email_node", _guard_business_error(read_email))
 graph.add_node("classification_node", _guard_business_error(classify_node))
 graph.add_node("approval_node", approval_node)
@@ -88,23 +111,33 @@ graph.add_node("booking_plan_node", _guard_business_error(booking_plan_node))
 graph.add_node("draft_node", _guard_business_error(draft_node))
 graph.add_node("send_email_node", _guard_business_error(send_email_node))
 
+
+
+
+# ===== Entry =====
 graph.add_edge(START, "read_email_node")
+
+# ===== Intake =====
 graph.add_conditional_edges(
     "read_email_node",
-    lambda state: "approval_node" if state.get("business_error") else "classification_node",
+    # 이메일 읽기 실패 -> 승인, 그 외 -> 분류 노드
+    route_after_read_email,
 )
 
-# spam → 종료, urgency high → 승인 노드, 그 외 → plan
 graph.add_conditional_edges(
     "classification_node",
+    # spam -> 종료, urgency high -> 승인, 그 외 -> 계획 수립
     route_after_classification,
 )
 
+# ===== Planning / Retrieval =====
 graph.add_conditional_edges(
     "plan_node",
+    # 오류 -> 승인, retrieval 필요 시 해당 검색 노드들로 분기, 그 외 -> 다음 단계
     route_after_plan,
 )
 
+# retrieval 완료 후 예약 실행 필요 여부로 분기
 graph.add_conditional_edges(
     "vector_retrieve_node",
     route_after_retrieve,
@@ -113,15 +146,18 @@ graph.add_conditional_edges(
     "db_retrieve_node",
     route_after_retrieve,
 )
-graph.add_edge("booking_plan_node", "draft_node")
+
+# ===== Booking / Draft =====
 graph.add_conditional_edges(
     "booking_plan_node",
-    lambda state: "approval_node" if state.get("business_error") else "draft_node",
+    route_after_booking_plan,
 )
 graph.add_conditional_edges(
     "draft_node",
-    lambda state: "approval_node" if state.get("business_error") else "send_email_node",
+    route_after_draft,
 )
+
+# ===== Exit =====
 graph.add_edge("send_email_node", END)
 graph.add_edge("approval_node", END)
 
