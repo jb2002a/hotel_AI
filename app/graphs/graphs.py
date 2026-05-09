@@ -44,7 +44,7 @@ def route_after_classification(
 
 def route_after_plan(
     state: EmailAgentState,
-) -> list[Send] | Literal["draft_node", "approval_node"]:
+) -> list[Send] | Literal["booking_plan_node", "draft_node", "approval_node"]:
     if state.get("business_error"):
         return "approval_node"
 
@@ -55,7 +55,10 @@ def route_after_plan(
         sends.append(Send("vector_retrieve_node", state))
     if "db_retrieve" in actions:
         sends.append(Send("db_retrieve_node", state))
-    return sends if sends else "draft_node"
+    if sends:
+        return sends
+
+    return route_after_retrieve(state)
 
 
 def route_after_retrieve(
