@@ -94,12 +94,6 @@ def route_after_booking_plan(
     return "approval_node" if state.get("business_error") else "draft_node"
 
 
-def route_after_draft(
-    state: EmailAgentState,
-) -> Literal["approval_node", "send_email_node"]:
-    # 답변 초안 생성 실패 시 승인으로 분기
-    return "approval_node" if state.get("business_error") else "send_email_node"
-
 graph = StateGraph(EmailAgentState)
 graph.add_node("read_email_node", _guard_business_error(read_email))
 graph.add_node("classification_node", _guard_business_error(classify_node))
@@ -109,7 +103,6 @@ graph.add_node("vector_retrieve_node", _guard_business_error(vector_retrieve))
 graph.add_node("db_retrieve_node", _guard_business_error(db_retrieve))
 graph.add_node("booking_plan_node", _guard_business_error(booking_plan_node))
 graph.add_node("draft_node", _guard_business_error(draft_node))
-graph.add_node("send_email_node", _guard_business_error(send_email_node))
 
 
 
@@ -152,13 +145,9 @@ graph.add_conditional_edges(
     "booking_plan_node",
     route_after_booking_plan,
 )
-graph.add_conditional_edges(
-    "draft_node",
-    route_after_draft,
-)
+graph.add_edge("draft_node", "approval_node")
 
 # ===== Exit =====
-graph.add_edge("send_email_node", END)
 graph.add_edge("approval_node", END)
 
 
