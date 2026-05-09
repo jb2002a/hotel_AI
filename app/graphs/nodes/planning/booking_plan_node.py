@@ -33,6 +33,29 @@ def _require_fields(
     return email, check_in, check_out
 
 
+def _assert_booking_modify_context(state: EmailAgentState) -> None:
+    db_results = state.get("db_retrieve_results")
+    if db_results is None:
+        raise BusinessError(
+            "예약 변경/취소에는 회원 및 예약 DB 조회가 필요합니다.",
+            code="BOOKING_CONTEXT_REQUIRED",
+        )
+    bookings = db_results.get("bookings")
+    if bookings is None or not isinstance(bookings, list):
+        raise BusinessError(
+            "예약 DB 조회 결과(bookings)가 없거나 형식이 올바르지 않습니다.",
+            code="BOOKING_CONTEXT_REQUIRED",
+        )
+    occupied = [
+        b for b in bookings if isinstance(b, dict) and b.get("status") == "occupied"
+    ]
+    if not occupied:
+        raise BusinessError(
+            "변경/취소할 상태의 예약(status=occupied)이 없습니다.",
+            code="BOOKING_NOT_FOUND",
+        )
+
+
 def _build_create_sql(email: str, check_in: str, check_out: str) -> str:
     return f"""
     INSERT OR IGNORE INTO members (email, name)
@@ -94,6 +117,9 @@ def booking_plan_node(state: EmailAgentState) -> dict:
         room_count = rest.get("vacant_room_count")
         if room_count is not None and room_count >= 1:
             action_sqlite["create_sql"] = _build_create_sql(email, check_in, check_out)
+
+    if "reservation_update" in actions or "reservation_delete" in actions:
+        _assert_booking_modify_context(state)
 
     if "reservation_update" in actions:
         assert check_in is not None and check_out is not None

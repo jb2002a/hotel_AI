@@ -68,10 +68,16 @@ def route_after_plan(
         retrieve_nodes.append("db_retrieve_node")
     if "retrieve_rest_rooms" in actions:
         retrieve_nodes.append("retrieve_rest_rooms_node")
-        
+
     # reservation_create에서 LLM이 retrieve_rest_rooms를 누락해도 안전하게 보정
     if "reservation_create" in actions and "retrieve_rest_rooms_node" not in retrieve_nodes:
         retrieve_nodes.append("retrieve_rest_rooms_node")
+    # reservation_update/delete에서 LLM이 db_retrieve를 누락해도 안전하게 보정
+    if (
+        ("reservation_update" in actions or "reservation_delete" in actions)
+        and "db_retrieve_node" not in retrieve_nodes
+    ):
+        retrieve_nodes.append("db_retrieve_node")
     if retrieve_nodes:
         return retrieve_nodes
 
