@@ -2,7 +2,7 @@ from langsmith import traceable
 
 from app.errors import BusinessError
 from app.schemas.graph_state import EmailAgentState
-from app.services.db_service import get_member_and_booking_by_email
+from app.services.db_service import get_member_and_booking_by_email, get_vacant_room_count
 from app.services.vector_store_service import get_vector_store_from_chroma
 
 
@@ -25,3 +25,10 @@ def db_retrieve(state: EmailAgentState) -> dict:
     except ValueError as exc:
         raise BusinessError(str(exc), code="MEMBER_NOT_FOUND") from exc
     return {"db_retrieve_results": member_and_bookings}
+
+
+@traceable(name="retrieve_rest_rooms")
+def retrieve_rest_rooms(state: EmailAgentState) -> dict:
+    
+    vacant_room_count = get_vacant_room_count()
+    return {"rest_room_retrieve_results": {"vacant_room_count": vacant_room_count}}

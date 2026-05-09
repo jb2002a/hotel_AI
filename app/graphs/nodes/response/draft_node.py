@@ -12,6 +12,7 @@ _tem_manager_name = "김아영"
 def draft_node(state: EmailAgentState) -> dict:
     vector_docs = state["vector_retrieve_results"]
     db_payload = state["db_retrieve_results"]
+    rest_room_payload = state.get("rest_room_retrieve_results")
 
     vector_block = "\n".join(d.page_content for d in vector_docs) if vector_docs else ""
     db_block = str(db_payload) if db_payload is not None else ""
@@ -21,6 +22,8 @@ def draft_node(state: EmailAgentState) -> dict:
         context_parts.append(f"[벡터 검색 근거]\n{vector_block}")
     if db_block:
         context_parts.append(f"[DB 조회(회원/예약)]\n{db_block}")
+    if rest_room_payload is not None:
+        context_parts.append(f"[DB 조회(잔여 객실)]\n{rest_room_payload}")
     search_results = "\n\n".join(context_parts) if context_parts else "(없음)"
 
     email_data = state["email_data"]
@@ -45,6 +48,9 @@ def draft_node(state: EmailAgentState) -> dict:
     3) 반드시 한국어로 작성하고, 공손하고 전문적인 비즈니스 톤을 유지하세요.
     4) 아래 이메일 템플릿 구조를 반드시 지키세요.
     5) 최종 출력은 고객에게 보낼 이메일 본문만 출력하세요. (머리말/분석 과정/JSON 금지)
+    6) [DB 조회(잔여 객실)]에 vacant_room_count가 있으면 반드시 반영하세요.
+       - vacant_room_count == 0: 현재 예약 가능한 객실이 없다고 명확히 안내하세요.
+       - vacant_room_count > 0: 예약 가능하다고 안내하고, 객실의 갯수는 언급하지 마세요,예약을 원한다면 메일을 보내달라고 요청하세요.
 
     출력 템플릿(형식 고정):
     안녕하세요, {_tem_hotel_name} 매니저 {_tem_manager_name}입니다.

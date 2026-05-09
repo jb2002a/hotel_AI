@@ -21,6 +21,7 @@ class PlanAction(TypedDict):
         Literal[
             "vector_retrieve",
             "db_retrieve",
+            "retrieve_rest_rooms",
             "reservation_create",
             "reservation_update",
             "reservation_delete",
@@ -49,6 +50,7 @@ class ApprovalPacket(TypedDict):
     email_data: EmailData
     extract_data: ExtractData | None
     db_retrieve_results: dict[str, Any] | None
+    rest_room_retrieve_results: dict[str, int] | None
     action_sqlite: ActionSQLite | None
     draft_response: str | None
     business_error: BusinessErrorPayload | None
@@ -72,6 +74,9 @@ class EmailAgentState(TypedDict):
 
     # SQLite 회원/예약 조회 결과
     db_retrieve_results: dict[str, Any] | None
+
+    # 남은 객실 조회 결과
+    rest_room_retrieve_results: dict[str, int] | None
 
     # 예약 액션 SQL 생성 결과
     action_sqlite: ActionSQLite | None

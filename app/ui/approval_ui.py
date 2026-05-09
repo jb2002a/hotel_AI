@@ -117,6 +117,7 @@ class ApprovalUI:
             "plan": None,
             "vector_retrieve_results": None,
             "db_retrieve_results": None,
+            "rest_room_retrieve_results": None,
             "action_sqlite": None,
             "draft_response": None,
             "approval_packet": None,

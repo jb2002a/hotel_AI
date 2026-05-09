@@ -48,3 +48,30 @@ def get_member_and_booking_by_email(email: str) -> dict[str, Any]:
             for r in booking_rows
         ]
     return {"member": member_payload, "bookings": bookings}
+
+
+@traceable(name="get_vacant_room_count")
+def get_vacant_room_count() -> int:
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA foreign_keys = ON")
+        cur = conn.execute(
+            """
+            SELECT COUNT(*) AS vacant_room_count
+            FROM room_booking
+            WHERE
+                (
+                    (room_number BETWEEN 101 AND 109)
+                    OR (room_number BETWEEN 201 AND 209)
+                    OR (room_number BETWEEN 301 AND 309)
+                )
+                AND status = 'vacant'
+                AND member_id IS NULL
+                AND check_in IS NULL
+                AND check_out IS NULL
+            """
+        )
+        row = cur.fetchone()
+        if row is None:
+            return 0
+        return int(row["vacant_room_count"])

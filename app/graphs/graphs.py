@@ -9,7 +9,7 @@ from app.graphs.nodes.control import approval_node
 from app.graphs.nodes.intake import classify_node, read_email
 from app.graphs.nodes.planning import booking_plan_node, plan_action
 from app.graphs.nodes.response import draft_node
-from app.graphs.nodes.retrieval import db_retrieve, vector_retrieve
+from app.graphs.nodes.retrieval import db_retrieve, retrieve_rest_rooms, vector_retrieve
 
 # 자식 클래스에서 던진 except를 그래프를 깨지않고 처리하기 위해 래핑
 def _guard_business_error(node_fn: Callable[[EmailAgentState], dict]) -> Callable[[EmailAgentState], dict]:
@@ -50,7 +50,7 @@ def route_after_read_email(
 def route_after_plan(
     state: EmailAgentState,
 ) -> (
-    list[Literal["vector_retrieve_node", "db_retrieve_node"]]
+    list[Literal["vector_retrieve_node", "db_retrieve_node", "retrieve_rest_rooms_node"]]
     | Literal["booking_plan_node", "draft_node", "approval_node"]
 ):
     if state.get("business_error"):
@@ -59,11 +59,18 @@ def route_after_plan(
     plan = state.get("plan")
     actions = plan.get("actions", []) if plan else []
 
-    retrieve_nodes: list[Literal["vector_retrieve_node", "db_retrieve_node"]] = []
+    retrieve_nodes: list[
+        Literal["vector_retrieve_node", "db_retrieve_node", "retrieve_rest_rooms_node"]
+    ] = []
     if "vector_retrieve" in actions:
         retrieve_nodes.append("vector_retrieve_node")
     if "db_retrieve" in actions:
         retrieve_nodes.append("db_retrieve_node")
+    if "retrieve_rest_rooms" in actions:
+        retrieve_nodes.append("retrieve_rest_rooms_node")
+    # reservation_create에서 LLM이 retrieve_rest_rooms를 누락해도 안전하게 보정
+    if "reservation_create" in actions and "retrieve_rest_rooms_node" not in retrieve_nodes:
+        retrieve_nodes.append("retrieve_rest_rooms_node")
     if retrieve_nodes:
         return retrieve_nodes
     # retrieval이 필요 없는 경우에는 retrieval 이후 라우팅 규칙과 동일하게 처리
@@ -99,6 +106,7 @@ graph.add_node("approval_node", approval_node)
 graph.add_node("plan_node", _guard_business_error(plan_action))
 graph.add_node("vector_retrieve_node", _guard_business_error(vector_retrieve))
 graph.add_node("db_retrieve_node", _guard_business_error(db_retrieve))
+graph.add_node("retrieve_rest_rooms_node", _guard_business_error(retrieve_rest_rooms))
 graph.add_node("booking_plan_node", _guard_business_error(booking_plan_node))
 graph.add_node("draft_node", _guard_business_error(draft_node))
 
@@ -137,6 +145,10 @@ graph.add_conditional_edges(
     "db_retrieve_node",
     route_after_retrieve,
 )
+graph.add_conditional_edges(
+    "retrieve_rest_rooms_node",
+    route_after_retrieve,
+)
 
 # ===== Booking / Draft =====
 graph.add_conditional_edges(
@@ -163,6 +175,7 @@ if __name__ == "__main__":
             "plan": None,
             "vector_retrieve_results": None,
             "db_retrieve_results": None,
+            "rest_room_retrieve_results": None,
             "action_sqlite": None,
             "draft_response": None,
             "approval_packet": None,
