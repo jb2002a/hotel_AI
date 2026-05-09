@@ -25,10 +25,11 @@ def plan_action(state: EmailAgentState) -> dict:
     - Use "vector_retrieve" when policy/FAQ/general hotel info from the knowledge base is needed.
     - Use "db_retrieve" when the reply needs the sender's membership or reservation data.
     - Use exactly one booking action from ["reservation_create", "reservation_update", "reservation_delete"] only when the email clearly asks for booking execution.
-    - If a booking action is needed, include "db_retrieve" first when customer/member reservation context must be checked.
+    - For "reservation_update" or "reservation_delete", include "db_retrieve" first to verify existing member/booking context.
+    - For "reservation_create", "db_retrieve" is optional. Do not include "db_retrieve" when it is a plain new booking request and no existing member/booking check is required.
     - Keep retrieval actions before booking actions in execution order.
     - You may return both, one, or neither. Examples:
-      [], ["vector_retrieve"], ["db_retrieve"], ["db_retrieve", "reservation_update"], ["vector_retrieve", "db_retrieve", "reservation_create"].
+      [], ["vector_retrieve"], ["db_retrieve"], ["reservation_create"], ["db_retrieve", "reservation_update"], ["vector_retrieve", "reservation_create"].
     - Do not return any other action names.
 
     Subject: {subject}

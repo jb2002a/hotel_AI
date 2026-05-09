@@ -3,8 +3,8 @@
 ## 실행·승인·안정성
 
 - [V] **send_email_node** — 초안(draft) 실제 발송 연동 (SMTP / Gmail API 등)
-- [ ] **booking_action_node** — 예약 생성·수정·취소 등 DB 반영(쓰기) 액션
-- [ ] **approval_node 완성** — 긴급 건 Human-in-the-loop: `interrupt`/외부 승인 연동, 승인 후 다음 노드로 나가는 엣지 정의
+- [V] **booking_action_node** — 예약 생성·수정·취소 등 DB 반영(쓰기) 액션
+- [V] **approval_node 완성** — 긴급 건 Human-in-the-loop: `interrupt`/외부 승인 연동, 승인 후 다음 노드로 나가는 엣지 정의
 - [ ] **에러처리** — 노드별 실패 시 재시도·폴백·로깅, 그래프 단계에서의 예외 처리 정책
 
 ## 이후 단계

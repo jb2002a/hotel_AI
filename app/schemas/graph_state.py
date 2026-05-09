@@ -45,6 +45,15 @@ class BusinessErrorPayload(TypedDict):
     message: str
 
 
+class ApprovalPacket(TypedDict):
+    email_data: EmailData
+    extract_data: ExtractData | None
+    db_retrieve_results: dict[str, Any] | None
+    action_sqlite: ActionSQLite | None
+    draft_response: str | None
+    business_error: BusinessErrorPayload | None
+
+
 class EmailAgentState(TypedDict):
     # 고객의 이메일 데이터
     email_data: EmailData
@@ -69,6 +78,12 @@ class EmailAgentState(TypedDict):
 
     # 생성된 내용
     draft_response: str | None
+
+    # 승인 노드에서 UI에 노출할 패킷 스냅샷
+    approval_packet: ApprovalPacket | None
+
+    # 매니저 코멘트
+    manager_comment: str | None
 
     # 업무 예외 상태 (승인/검토 라우팅용)
     business_error: BusinessErrorPayload | None

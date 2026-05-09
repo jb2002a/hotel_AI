@@ -8,7 +8,7 @@ from app.schemas.graph_state import EmailAgentState
 from app.graphs.nodes.control import approval_node
 from app.graphs.nodes.intake import classify_node, read_email
 from app.graphs.nodes.planning import booking_plan_node, plan_action
-from app.graphs.nodes.response import draft_node, send_email_node
+from app.graphs.nodes.response import draft_node
 from app.graphs.nodes.retrieval import db_retrieve, vector_retrieve
 
 # 자식 클래스에서 던진 except를 그래프를 깨지않고 처리하기 위해 래핑
@@ -37,8 +37,6 @@ def route_after_classification(
         return END
     if classification["category"] == "spam":
         return END
-    if classification["urgency"] == "high":
-        return "approval_node"
     return "plan_node"
 
 
@@ -167,6 +165,8 @@ if __name__ == "__main__":
             "db_retrieve_results": None,
             "action_sqlite": None,
             "draft_response": None,
+            "approval_packet": None,
+            "manager_comment": None,
             "business_error": None,
         }
     )
