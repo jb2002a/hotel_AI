@@ -1,5 +1,6 @@
 from langsmith import traceable
 
+from app.errors import BusinessError
 from app.schemas.graph_state import ActionSQLite, EmailAgentState
 
 
@@ -10,24 +11,24 @@ def _require_fields(
 ) -> tuple[str, str | None, str | None]:
     email_data = state.get("email_data")
     if not email_data:
-        raise ValueError("state.email_data가 없습니다.")
+        raise BusinessError("state.email_data가 없습니다.")
 
     email = email_data.get("sender_email")
     if not email:
-        raise ValueError("sender_email이 없습니다.")
+        raise BusinessError("sender_email이 없습니다.")
 
     check_in: str | None = None
     check_out: str | None = None
     if require_dates:
         extract_data = state.get("extract_data")
         if not extract_data:
-            raise ValueError("state.extract_data가 없습니다.")
+            raise BusinessError("state.extract_data가 없습니다.")
         check_in = extract_data.get("check_in")
         check_out = extract_data.get("check_out")
         if not check_in:
-            raise ValueError("check_in이 없습니다.")
+            raise BusinessError("check_in이 없습니다.")
         if not check_out:
-            raise ValueError("check_out이 없습니다.")
+            raise BusinessError("check_out이 없습니다.")
 
     return email, check_in, check_out
 

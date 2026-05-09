@@ -1,8 +1,10 @@
 # app/graphs/main_graph.py (예시)
-from typing import Literal
+from collections.abc import Callable
+from typing import Any, Literal
 
 from langgraph.graph import StateGraph, START, END
 from langgraph.types import Send
+from app.errors import BusinessError
 from app.schemas.graph_state import EmailAgentState
 from app.graphs.nodes.control import approval_node
 from app.graphs.nodes.intake import classify_node, read_email
@@ -10,9 +12,27 @@ from app.graphs.nodes.planning import booking_plan_node, plan_action
 from app.graphs.nodes.response import draft_node, send_email_node
 from app.graphs.nodes.retrieval import db_retrieve, vector_retrieve
 
+# 자식 클래스에서 던진 except를 그래프를 깨지않고 처리하기 위해 래핑
+def _guard_business_error(node_fn: Callable[[EmailAgentState], dict]) -> Callable[[EmailAgentState], dict]:
+    def _wrapped(state: EmailAgentState) -> dict:
+        try:
+            return node_fn(state)
+        except BusinessError as exc:
+            return {
+                "business_error": {
+                    "code": exc.code,
+                    "message": exc.message,
+                }
+            }
+
+    return _wrapped
+
 def route_after_classification(
     state: EmailAgentState,
 ) -> Literal[END, "plan_node", "approval_node"]:
+    if state.get("business_error"):
+        return "approval_node"
+
     classification = state["classification"]
     if classification is None:
         return END
@@ -24,7 +44,10 @@ def route_after_classification(
 
 def route_after_plan(
     state: EmailAgentState,
-) -> list[Send] | Literal["draft_node"]:
+) -> list[Send] | Literal["draft_node", "approval_node"]:
+    if state.get("business_error"):
+        return "approval_node"
+
     plan = state.get("plan")
     actions = plan.get("actions", []) if plan else []
     sends: list[Send] = []
@@ -37,7 +60,10 @@ def route_after_plan(
 
 def route_after_retrieve(
     state: EmailAgentState,
-) -> Literal["booking_plan_node", "draft_node"]:
+) -> Literal["booking_plan_node", "draft_node", "approval_node"]:
+    if state.get("business_error"):
+        return "approval_node"
+
     plan = state.get("plan")
     actions = set(plan.get("actions", []) if plan else [])
     booking_actions = {
@@ -49,18 +75,21 @@ def route_after_retrieve(
 
 graph = StateGraph(EmailAgentState)
 
-graph.add_node("read_email_node", read_email)
-graph.add_node("classification_node", classify_node)
+graph.add_node("read_email_node", _guard_business_error(read_email))
+graph.add_node("classification_node", _guard_business_error(classify_node))
 graph.add_node("approval_node", approval_node)
-graph.add_node("plan_node", plan_action)
-graph.add_node("vector_retrieve_node", vector_retrieve)
-graph.add_node("db_retrieve_node", db_retrieve)
-graph.add_node("booking_plan_node", booking_plan_node)
-graph.add_node("draft_node", draft_node)
-graph.add_node("send_email_node", send_email_node)
+graph.add_node("plan_node", _guard_business_error(plan_action))
+graph.add_node("vector_retrieve_node", _guard_business_error(vector_retrieve))
+graph.add_node("db_retrieve_node", _guard_business_error(db_retrieve))
+graph.add_node("booking_plan_node", _guard_business_error(booking_plan_node))
+graph.add_node("draft_node", _guard_business_error(draft_node))
+graph.add_node("send_email_node", _guard_business_error(send_email_node))
 
 graph.add_edge(START, "read_email_node")
-graph.add_edge("read_email_node", "classification_node")
+graph.add_conditional_edges(
+    "read_email_node",
+    lambda state: "approval_node" if state.get("business_error") else "classification_node",
+)
 
 # spam → 종료, urgency high → 승인 노드, 그 외 → plan
 graph.add_conditional_edges(
@@ -82,8 +111,16 @@ graph.add_conditional_edges(
     route_after_retrieve,
 )
 graph.add_edge("booking_plan_node", "draft_node")
-graph.add_edge("draft_node", "send_email_node")
+graph.add_conditional_edges(
+    "booking_plan_node",
+    lambda state: "approval_node" if state.get("business_error") else "draft_node",
+)
+graph.add_conditional_edges(
+    "draft_node",
+    lambda state: "approval_node" if state.get("business_error") else "send_email_node",
+)
 graph.add_edge("send_email_node", END)
+graph.add_edge("approval_node", END)
 
 
 if __name__ == "__main__":
@@ -102,5 +139,6 @@ if __name__ == "__main__":
             "db_retrieve_results": None,
             "action_sqlite": None,
             "draft_response": None,
+            "business_error": None,
         }
     )

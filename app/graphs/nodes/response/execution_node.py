@@ -4,6 +4,7 @@ from email.mime.text import MIMEText
 
 from langsmith import traceable
 
+from app.errors import BusinessError
 from app.schemas.graph_state import EmailAgentState
 
 
@@ -13,12 +14,12 @@ def send_email_node(state: EmailAgentState) -> dict:
     draft_response = state["draft_response"]
 
     if not draft_response:
-        raise ValueError("draft_response가 비어 있어 메일을 발송할 수 없습니다.")
+        raise BusinessError("draft_response가 비어 있어 메일을 발송할 수 없습니다.")
 
     sender_email = os.getenv("GMAIL_SENDER")
     app_password = os.getenv("GMAIL_APP_PASSWORD")
     if not sender_email or not app_password:
-        raise ValueError("GMAIL_SENDER, GMAIL_APP_PASSWORD 환경변수가 필요합니다.")
+        raise BusinessError("GMAIL_SENDER, GMAIL_APP_PASSWORD 환경변수가 필요합니다.")
 
     receiver_email = email_data["sender_email"]
     subject = f"Re: {email_data['email_subject']}"

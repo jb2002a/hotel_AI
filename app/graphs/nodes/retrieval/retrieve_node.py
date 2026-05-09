@@ -1,5 +1,6 @@
 from langsmith import traceable
 
+from app.errors import BusinessError
 from app.schemas.graph_state import EmailAgentState
 from app.services.db_service import get_member_and_booking_by_email
 from app.services.vector_store_service import get_vector_store_from_chroma
@@ -19,5 +20,8 @@ def vector_retrieve(state: EmailAgentState) -> dict:
 def db_retrieve(state: EmailAgentState) -> dict:
     email_data = state["email_data"]
     email = email_data["sender_email"]
-    member_and_bookings = get_member_and_booking_by_email(email)
+    try:
+        member_and_bookings = get_member_and_booking_by_email(email)
+    except ValueError as exc:
+        raise BusinessError(str(exc), code="MEMBER_NOT_FOUND") from exc
     return {"db_retrieve_results": member_and_bookings}

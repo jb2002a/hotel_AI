@@ -40,6 +40,11 @@ class ExtractData(TypedDict):
     check_out: str | None
 
 
+class BusinessErrorPayload(TypedDict):
+    code: str
+    message: str
+
+
 class EmailAgentState(TypedDict):
     # 고객의 이메일 데이터
     email_data: EmailData
@@ -64,5 +69,8 @@ class EmailAgentState(TypedDict):
 
     # 생성된 내용
     draft_response: str | None
+
+    # 업무 예외 상태 (승인/검토 라우팅용)
+    business_error: BusinessErrorPayload | None
 
 
