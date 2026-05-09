@@ -10,6 +10,7 @@ try:
 except ImportError:
     from langgraph.checkpoint.memory import MemorySaver as _MemorySaver
 
+from app.config.config import USER_MOCK_DATA_PATH
 from app.graphs.graphs import graph
 
 
@@ -24,7 +25,16 @@ class ApprovalUI:
         self.compiled_graph = graph.compile(checkpointer=_MemorySaver())
 
         self.last_packet: dict | None = None
+        self._mock_email_max_idx = self._load_mock_email_max_idx()
         self._build_widgets()
+
+    def _load_mock_email_max_idx(self) -> int:
+        try:
+            with open(USER_MOCK_DATA_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            return max(0, len(data) - 1)
+        except (OSError, json.JSONDecodeError, TypeError):
+            return 0
 
     def _build_widgets(self) -> None:
         top_frame = tk.Frame(self.root)
@@ -32,6 +42,21 @@ class ApprovalUI:
 
         self.thread_label = tk.Label(top_frame, text=f"thread_id: {self.thread_id}")
         self.thread_label.pack(side="left")
+
+        mock_frame = tk.Frame(top_frame)
+        mock_frame.pack(side="left", padx=(16, 0))
+        tk.Label(mock_frame, text="mock 이메일 인덱스:").pack(side="left")
+        default_idx = "1" if self._mock_email_max_idx >= 1 else "0"
+        self.mock_email_spin = tk.Spinbox(
+            mock_frame,
+            from_=0,
+            to=self._mock_email_max_idx,
+            width=5,
+            justify="center",
+        )
+        self.mock_email_spin.delete(0, tk.END)
+        self.mock_email_spin.insert(0, default_idx)
+        self.mock_email_spin.pack(side="left", padx=(4, 0))
 
         start_button = tk.Button(
             top_frame,
@@ -50,6 +75,18 @@ class ApprovalUI:
             fg="white",
         )
         resume_button.pack(side="right", padx=4)
+
+        plan_frame = tk.Frame(self.root)
+        plan_frame.pack(fill="x", padx=12, pady=(0, 4))
+        tk.Label(
+            plan_frame,
+            text="플랜 액션 (state.plan.actions)",
+            anchor="w",
+        ).pack(anchor="w")
+        self.plan_actions_text = scrolledtext.ScrolledText(
+            plan_frame, height=3, wrap=tk.WORD, state=tk.DISABLED
+        )
+        self.plan_actions_text.pack(fill="x")
 
         packet_label = tk.Label(self.root, text="승인 패킷(JSON, 읽기 전용)")
         packet_label.pack(anchor="w", padx=12)
@@ -92,6 +129,20 @@ class ApprovalUI:
         widget.delete("1.0", tk.END)
         widget.insert("1.0", value)
 
+    def _set_plan_actions_text(self, value: str) -> None:
+        self.plan_actions_text.configure(state=tk.NORMAL)
+        self.plan_actions_text.delete("1.0", tk.END)
+        self.plan_actions_text.insert("1.0", value)
+        self.plan_actions_text.configure(state=tk.DISABLED)
+
+    def _format_plan_for_ui(self, plan: dict | None) -> str:
+        if not plan:
+            return "(plan 없음)"
+        actions = plan.get("actions")
+        if not actions:
+            return "(액션 목록 비어 있음)"
+        return "\n".join(f"- {a}" for a in actions)
+
     def _extract_interrupt_payload(self, result: dict) -> dict | None:
         interrupts = result.get("__interrupt__")
         if not interrupts:
@@ -123,7 +174,15 @@ class ApprovalUI:
             "approval_packet": None,
             "manager_comment": None,
             "business_error": None,
+            "mock_email_idx": self._read_mock_email_idx(),
         }
+
+    def _read_mock_email_idx(self) -> int:
+        raw = self.mock_email_spin.get().strip()
+        try:
+            return int(raw)
+        except ValueError:
+            return 1
 
     def start_request(self) -> None:
         self.thread_id = str(uuid.uuid4())
@@ -144,6 +203,13 @@ class ApprovalUI:
         )
 
         packet = self._extract_interrupt_payload(result)
+        plan = None
+        if isinstance(packet, dict):
+            plan = packet.get("plan")
+        if plan is None and isinstance(result, dict):
+            plan = result.get("plan")
+        self._set_plan_actions_text(self._format_plan_for_ui(plan))
+
         if packet is None:
             self.last_packet = None
             self._set_text(self.packet_text, "(interrupt 없음)")

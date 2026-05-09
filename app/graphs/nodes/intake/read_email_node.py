@@ -4,7 +4,14 @@ from app.config.config import LLM, USER_MOCK_DATA_PATH
 from app.schemas.graph_state import EmailAgentState, EmailData, ExtractData
 from langsmith import traceable
 
-_TEST_IDX = 1
+
+def _resolve_mock_email_idx(state: EmailAgentState, list_len: int) -> int:
+    raw = state.get("mock_email_idx", 1)
+    try:
+        idx = int(raw)
+    except (TypeError, ValueError):
+        idx = 1
+    return max(0, min(idx, list_len - 1))
 
 
 @traceable(name="read_email")
@@ -12,10 +19,10 @@ def read_email(state: EmailAgentState) -> dict:
     # TODO: 현재는 mock 데이터와 임시적으로 연결, 실제 이메일 서비스와 연동 필요
     # json은 emails내에 subject,body,sender_email,category 필드가 있음 (카테고리는 평가용으로 적어둠, 사용x)
     with open(USER_MOCK_DATA_PATH, "r", encoding="utf-8") as f:
-        mock_data = json.load(f)
+        mock_list = json.load(f)
 
-    # 테스트용 인덱스 설정
-    mock_data = mock_data[_TEST_IDX]
+    idx = _resolve_mock_email_idx(state, len(mock_list))
+    mock_data = mock_list[idx]
 
     email_data = EmailData(
         email_subject=mock_data["subject"],
