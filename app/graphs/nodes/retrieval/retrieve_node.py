@@ -29,6 +29,5 @@ def db_retrieve(state: EmailAgentState) -> dict:
 
 @traceable(name="retrieve_rest_rooms")
 def retrieve_rest_rooms(state: EmailAgentState) -> dict:
-    
     vacant_room_count = get_vacant_room_count()
     return {"rest_room_retrieve_results": {"vacant_room_count": vacant_room_count}}

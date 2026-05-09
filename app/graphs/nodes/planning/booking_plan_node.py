@@ -90,7 +90,10 @@ def booking_plan_node(state: EmailAgentState) -> dict:
 
     if "reservation_create" in actions:
         assert check_in is not None and check_out is not None
-        action_sqlite["create_sql"] = _build_create_sql(email, check_in, check_out)
+        rest = state.get("rest_room_retrieve_results") or {}
+        room_count = rest.get("vacant_room_count")
+        if room_count is not None and room_count >= 1:
+            action_sqlite["create_sql"] = _build_create_sql(email, check_in, check_out)
 
     if "reservation_update" in actions:
         assert check_in is not None and check_out is not None
