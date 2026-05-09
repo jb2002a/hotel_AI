@@ -8,3 +8,4 @@ langsmith
 dotenv
 sentence-transformers
 llama_cloud
+pytest

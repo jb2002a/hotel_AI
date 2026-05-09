@@ -1,13 +1,14 @@
-from app.schemas.graph_state import EmailAgentState, PlanAction
 from app.config.config import LLM
+from app.schemas.graph_state import EmailAgentState, PlanAction
 from langsmith import traceable
+
 
 @traceable(name="plan_action")
 def plan_action(state: EmailAgentState) -> dict:
-    email_data = state['email_data']
+    email_data = state["email_data"]
 
-    subject = email_data['email_subject']
-    content = email_data['email_content']
+    subject = email_data["email_subject"]
+    content = email_data["email_content"]
 
     structured_llm = LLM.with_structured_output(PlanAction)
 

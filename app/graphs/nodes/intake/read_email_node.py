@@ -1,19 +1,15 @@
 import json
-from app.schemas.graph_state import (
-    EmailAgentState,
-    EmailClassification,
-    EmailData,
-    ExtractData,
-)
-from app.config.config import USER_MOCK_DATA_PATH, LLM
+
+from app.config.config import LLM, USER_MOCK_DATA_PATH
+from app.schemas.graph_state import EmailAgentState, EmailData, ExtractData
 from langsmith import traceable
 
 _TEST_IDX = 1
 
+
 @traceable(name="read_email")
 def read_email(state: EmailAgentState) -> dict:
     # TODO: 현재는 mock 데이터와 임시적으로 연결, 실제 이메일 서비스와 연동 필요
-
     # json은 emails내에 subject,body,sender_email,category 필드가 있음 (카테고리는 평가용으로 적어둠, 사용x)
     with open(USER_MOCK_DATA_PATH, "r", encoding="utf-8") as f:
         mock_data = json.load(f)
@@ -24,7 +20,7 @@ def read_email(state: EmailAgentState) -> dict:
     email_data = EmailData(
         email_subject=mock_data["subject"],
         email_content=mock_data["body"],
-        sender_email=mock_data["sender_email"]
+        sender_email=mock_data["sender_email"],
     )
 
     extract_llm = LLM.with_structured_output(ExtractData)
@@ -42,25 +38,3 @@ def read_email(state: EmailAgentState) -> dict:
     extract_data = extract_llm.invoke(extract_prompt)
 
     return {"email_data": email_data, "extract_data": extract_data}
-
-@traceable(name="classify_node")
-def classify_node(state: EmailAgentState) -> dict:
-    # 래퍼에 맞춰서 structured_llm 생성
-    structured_llm = LLM.with_structured_output(EmailClassification)
-
-    email_data = state["email_data"]
-
-    # 프롬프트 포맷팅
-    classification_prompt = f"""
-    Analyze this customer email and classify it:
-    
-    Email: {email_data['email_subject']}
-    Email Content: {email_data['email_content']}
-
-    Provide classification including category, urgency.
-    """
-
-    # 래퍼에 맞춰서 구조화된 응답 받기
-    classification = structured_llm.invoke(classification_prompt)
-
-    return {"classification": classification}

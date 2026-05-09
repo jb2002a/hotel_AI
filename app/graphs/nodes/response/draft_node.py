@@ -1,20 +1,19 @@
 # 답변 생성 노드, vector_retrieve / db_retrieve 결과가 있으면 참조.
 
+from app.config.config import LLM
 from app.schemas.graph_state import EmailAgentState
 from langsmith import traceable
-from app.config.config import LLM
 
 _tem_hotel_name = "그랜드 시그니처 호텔 & 리조트"
 _tem_manager_name = "김아영"
+
 
 @traceable(name="draft_node")
 def draft_node(state: EmailAgentState) -> dict:
     vector_docs = state["vector_retrieve_results"]
     db_payload = state["db_retrieve_results"]
 
-    vector_block = (
-        "\n".join(d.page_content for d in vector_docs) if vector_docs else ""
-    )
+    vector_block = "\n".join(d.page_content for d in vector_docs) if vector_docs else ""
     db_block = str(db_payload) if db_payload is not None else ""
 
     context_parts: list[str] = []

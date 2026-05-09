@@ -4,13 +4,11 @@ from typing import Literal
 from langgraph.graph import StateGraph, START, END
 from langgraph.types import Send
 from app.schemas.graph_state import EmailAgentState
-from app.graphs.nodes.classification_node import read_email, classify_node
-from app.graphs.nodes.approval_node import approval_node
-from app.graphs.nodes.plan_node import plan_action
-from app.graphs.nodes.retrieve_node import vector_retrieve, db_retrieve
-from app.graphs.nodes.draft_node import draft_node
-from app.graphs.nodes.execution_node import send_email_node
-from app.graphs.nodes.booking_plan_node import booking_plan_node
+from app.graphs.nodes.control import approval_node
+from app.graphs.nodes.intake import classify_node, read_email
+from app.graphs.nodes.planning import booking_plan_node, plan_action
+from app.graphs.nodes.response import draft_node, send_email_node
+from app.graphs.nodes.retrieval import db_retrieve, vector_retrieve
 
 def route_after_classification(
     state: EmailAgentState,
