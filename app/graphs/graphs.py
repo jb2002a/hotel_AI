@@ -10,7 +10,7 @@ from app.graphs.nodes.plan_node import plan_action
 from app.graphs.nodes.retrieve_node import vector_retrieve, db_retrieve
 from app.graphs.nodes.draft_node import draft_node
 from app.graphs.nodes.execution_node import send_email_node
-
+from app.graphs.nodes.booking_plan_node import booking_plan_node
 
 def route_after_classification(
     state: EmailAgentState,
@@ -37,6 +37,18 @@ def route_after_plan(
     return sends if sends else "draft_node"
 
 
+def route_after_retrieve(
+    state: EmailAgentState,
+) -> Literal["booking_plan_node", "draft_node"]:
+    plan = state.get("plan")
+    actions = set(plan.get("actions", []) if plan else [])
+    booking_actions = {
+        "reservation_create",
+        "reservation_update",
+        "reservation_delete",
+    }
+    return "booking_plan_node" if actions & booking_actions else "draft_node"
+
 graph = StateGraph(EmailAgentState)
 
 graph.add_node("read_email_node", read_email)
@@ -45,6 +57,7 @@ graph.add_node("approval_node", approval_node)
 graph.add_node("plan_node", plan_action)
 graph.add_node("vector_retrieve_node", vector_retrieve)
 graph.add_node("db_retrieve_node", db_retrieve)
+graph.add_node("booking_plan_node", booking_plan_node)
 graph.add_node("draft_node", draft_node)
 graph.add_node("send_email_node", send_email_node)
 
@@ -62,8 +75,15 @@ graph.add_conditional_edges(
     route_after_plan,
 )
 
-graph.add_edge("vector_retrieve_node", "draft_node")
-graph.add_edge("db_retrieve_node", "draft_node")
+graph.add_conditional_edges(
+    "vector_retrieve_node",
+    route_after_retrieve,
+)
+graph.add_conditional_edges(
+    "db_retrieve_node",
+    route_after_retrieve,
+)
+graph.add_edge("booking_plan_node", "draft_node")
 graph.add_edge("draft_node", "send_email_node")
 graph.add_edge("send_email_node", END)
 
@@ -82,6 +102,7 @@ if __name__ == "__main__":
             "plan": None,
             "vector_retrieve_results": None,
             "db_retrieve_results": None,
+            "action_sqlite": None,
             "draft_response": None,
         }
     )

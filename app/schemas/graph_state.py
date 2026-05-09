@@ -17,11 +17,35 @@ class EmailClassification(TypedDict):
 
 # 계획 수행 결과 (필요한 단계 목록; 순서는 실행 순서)
 class PlanAction(TypedDict):
-    actions: list[Literal["vector_retrieve", "db_retrieve"]]
+    actions: list[
+        Literal[
+            "vector_retrieve",
+            "db_retrieve",
+            "reservation_create",
+            "reservation_update",
+            "reservation_delete",
+        ]
+    ]
+
+class ActionSQLite(TypedDict):
+    create_sql: str
+    update_sql: str
+    delete_sql: str
+
+
+# SQLite 회원/예약 조회 최소 래퍼
+class ExtractData(TypedDict):
+    name: str | None
+    check_in: str | None
+    check_out: str | None
+
 
 class EmailAgentState(TypedDict):
     # 고객의 이메일 데이터
     email_data: EmailData
+
+    # 예약 액션 추출 데이터
+    extract_data: ExtractData | None
 
     # 이메일 분류 결과
     classification: EmailClassification | None
@@ -34,6 +58,9 @@ class EmailAgentState(TypedDict):
 
     # SQLite 회원/예약 조회 결과
     db_retrieve_results: dict[str, Any] | None
+
+    # 예약 액션 SQL 생성 결과
+    action_sqlite: ActionSQLite | None
 
     # 생성된 내용
     draft_response: str | None

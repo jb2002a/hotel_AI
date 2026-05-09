@@ -1,9 +1,14 @@
 import json
-from app.schemas.graph_state import EmailAgentState, EmailClassification, EmailData
+from app.schemas.graph_state import (
+    EmailAgentState,
+    EmailClassification,
+    EmailData,
+    ExtractData,
+)
 from app.config.config import USER_MOCK_DATA_PATH, LLM
 from langsmith import traceable
 
-_TEST_IDX = 0
+_TEST_IDX = 1
 
 @traceable(name="read_email")
 def read_email(state: EmailAgentState) -> dict:
@@ -22,7 +27,21 @@ def read_email(state: EmailAgentState) -> dict:
         sender_email=mock_data["sender_email"]
     )
 
-    return {"email_data": email_data}
+    extract_llm = LLM.with_structured_output(ExtractData)
+    extract_prompt = f"""
+    Extract reservation-related fields from this customer email context.
+
+    Return JSON with exactly these keys:
+    - name (if not mentioned, use null)
+    - check_in (YYYY-MM-DD if inferable, else null)
+    - check_out (YYYY-MM-DD if inferable, else null)
+
+    Subject: {email_data["email_subject"]}
+    Body: {email_data["email_content"]}
+    """
+    extract_data = extract_llm.invoke(extract_prompt)
+
+    return {"email_data": email_data, "extract_data": extract_data}
 
 @traceable(name="classify_node")
 def classify_node(state: EmailAgentState) -> dict:
