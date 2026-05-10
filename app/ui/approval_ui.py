@@ -31,7 +31,7 @@ class ApprovalUI:
     def _load_mock_email_max_idx(self) -> int:
         try:
             with open(USER_MOCK_DATA_PATH, "r", encoding="utf-8") as f:
-                data = json.load(f)
+                data = [json.loads(line) for line in f if line.strip()]
             return max(0, len(data) - 1)
         except (OSError, json.JSONDecodeError, TypeError):
             return 0

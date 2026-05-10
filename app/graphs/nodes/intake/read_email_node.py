@@ -19,15 +19,15 @@ def read_email(state: EmailAgentState) -> dict:
     # TODO: 현재는 mock 데이터와 임시적으로 연결, 실제 이메일 서비스와 연동 필요
     # json은 emails내에 subject,body,sender_email,category 필드가 있음 (카테고리는 평가용으로 적어둠, 사용x)
     with open(USER_MOCK_DATA_PATH, "r", encoding="utf-8") as f:
-        mock_list = json.load(f)
+        mock_list = [json.loads(line) for line in f if line.strip()]
 
     idx = _resolve_mock_email_idx(state, len(mock_list))
-    mock_data = mock_list[idx]
+    mock_row = mock_list[idx]["input"]
 
     email_data = EmailData(
-        email_subject=mock_data["subject"],
-        email_content=mock_data["body"],
-        sender_email=mock_data["sender_email"],
+        email_subject=mock_row["subject"],
+        email_content=mock_row["body"],
+        sender_email=mock_row["sender_email"],
     )
 
     extract_llm = LLM.with_structured_output(ExtractData)
