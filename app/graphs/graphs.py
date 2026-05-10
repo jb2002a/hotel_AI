@@ -120,8 +120,6 @@ graph.add_node("booking_plan_node", _guard_business_error(booking_plan_node))
 graph.add_node("draft_node", _guard_business_error(draft_node))
 
 
-
-
 # ===== Entry =====
 graph.add_edge(START, "read_email_node")
 

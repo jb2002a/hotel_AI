@@ -3,7 +3,6 @@ from langgraph.types import interrupt
 
 
 def approval_node(state: EmailAgentState) -> dict:
-    """매니저가 패킷을 수정해 resume하면 state를 반영하고 종료 단계로 이동."""
     approval_packet = {
         "email_data": state.get("email_data"),
         "extract_data": state.get("extract_data"),
@@ -14,6 +13,9 @@ def approval_node(state: EmailAgentState) -> dict:
         "draft_response": state.get("draft_response"),
         "business_error": state.get("business_error"),
     }
+    # 평가를 위해 조기 return 처리, 후에 하단 코드 추가
+    return {"approval_packet": approval_packet}
+
 
     resume_payload = interrupt(
         {
