@@ -12,6 +12,23 @@ class EmailData(TypedDict):
 
 # 이메일 분류 결과 래퍼
 class EmailClassification(TypedDict):
+    intents: list[
+        Literal[
+            "policy_qna",
+            "facility_info",
+            "booking_lookup",
+            "reservation_create",
+            "reservation_update",
+            "reservation_delete",
+            "payment_invoice",
+            "promotion_pricing",
+            "special_request",
+            "complaint_or_incident",
+            "out_of_scope",
+            "unclear",
+            "other",
+        ]
+    ]
     category: Literal["normal", "spam"]
     urgency: Literal["normal", "high"]
 
@@ -59,7 +76,7 @@ class ApprovalPacket(TypedDict):
 
 
 class EmailAgentState(TypedDict):
-    # mock_data.json에서 선택할 레코드 인덱스(UI/테스트용; read_email에서만 사용)
+
     mock_email_idx: NotRequired[int]
 
     # 고객의 이메일 데이터
