@@ -204,10 +204,13 @@ def run_eval(
     indices: list[int],
 ) -> dict[str, Any]:
     from app.graphs.graphs import graph as email_graph
+    from app.services.vector_store_service import get_vector_store_from_chroma
 
     dataset = load_jsonl(dataset_path)
 
     compiled = email_graph.compile()
+    # retrieve 경로에서 첫 호출 지연/재로딩 비용을 줄이기 위해 사전 초기화
+    get_vector_store_from_chroma()
 
     per_sample_written: list[dict[str, Any]] = []
 
