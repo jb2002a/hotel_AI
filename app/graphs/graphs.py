@@ -36,7 +36,7 @@ def route_after_classification(
     if classification is None:
         return END
     if classification["category"] == "spam":
-        return END
+        return "approval_node"
     return "plan_node"
 
 
