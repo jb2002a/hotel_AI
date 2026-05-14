@@ -12,7 +12,6 @@ def vector_retrieve(state: EmailAgentState) -> dict:
     query = f"{email_data['email_subject']}\n{email_data['email_content']}"
     vector_store = get_vector_store_from_chroma()
     search_results = vector_store.similarity_search(query, k=3)
-    print("vector_retrieve done")
     return {"vector_retrieve_results": search_results}
 
 
