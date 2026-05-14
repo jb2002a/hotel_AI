@@ -41,7 +41,9 @@ def read_email(state: EmailAgentState) -> dict:
     Extract reservation-related fields from this customer email context.
 
     Return JSON with exactly these keys:
-    - name (if not mentioned, use null)
+    - name: The full name of the person who sent this email, as they identify themselves.
+    Extract it regardless of context (even if they mention wanting to change or correct their name).
+    Use null only if no personal name can be found anywhere in the email.
     - check_in (YYYY-MM-DD if inferable, else null)
     - check_out (YYYY-MM-DD if inferable, else null)
 

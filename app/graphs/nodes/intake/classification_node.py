@@ -14,7 +14,7 @@ def classify_node(state: EmailAgentState) -> dict:
     Sender: {email_data['sender_email']}
     You must return exactly these fields:
     - intents: list of 1 or more items chosen only from:
-      ["policy_qna","facility_info","booking_lookup","reservation_create","reservation_update","reservation_delete","payment_invoice","promotion_pricing","special_request","complaint_or_incident","out_of_scope","unclear","other"]
+      ["policy_qna","booking_lookup","reservation_create","reservation_update","reservation_delete","payment_invoice","promotion_pricing","special_request","complaint_or_incident","out_of_scope","unclear","other"]
       (Use multiple intents if needed.)
     - category: one of ["normal", "spam"]
     - urgency: one of ["normal", "high"]

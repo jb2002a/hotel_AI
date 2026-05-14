@@ -15,7 +15,6 @@ class EmailClassification(TypedDict):
     intents: list[
         Literal[
             "policy_qna",
-            "facility_info",
             "booking_lookup",
             "reservation_create",
             "reservation_update",
