@@ -1,4 +1,4 @@
-# 답변 생성 노드, vector_retrieve / db_retrieve 결과가 있으면 참조.
+# 답변 생성 노드, policy / member_booking / vacancy retrieve 결과가 있으면 참조.
 
 from app.config.config import LLM
 from app.schemas.graph_state import EmailAgentState
@@ -8,8 +8,8 @@ _tem_hotel_name = "그랜드 시그니처 호텔 & 리조트"
 _tem_manager_name = "김아영"
 
 
-@traceable(name="draft_node")
-def draft_node(state: EmailAgentState) -> dict:
+@traceable(name="reply_draft_node")
+def reply_draft_node(state: EmailAgentState) -> dict:
     vector_docs = state.get("vector_retrieve_results")
     db_payload = state.get("db_retrieve_results")
     rest_room_payload = state.get("rest_room_retrieve_results")

@@ -14,15 +14,15 @@ def _resolve_mock_email_idx(state: EmailAgentState, list_len: int) -> int:
     return max(0, min(idx, list_len - 1))
 
 
-@traceable(name="read_email")
-def read_email(state: EmailAgentState) -> dict:
+@traceable(name="email_ingest")
+def email_ingest(state: EmailAgentState) -> dict:
     # TODO: 현재는 mock 데이터와 임시적으로 연결, 실제 이메일 서비스와 연동 필요
     # json은 emails내에 subject,body,sender_email,category 필드가 있음 (카테고리는 평가용으로 적어둠, 사용x)
-    
-    #평가용 파이프라인의 경우(state에 email_data가 있음)
+
+    # 평가용 파이프라인의 경우(state에 email_data가 있음)
     if state.get("email_data"):
         email_data = state["email_data"]
-    #일반적인 파이프라인
+    # 일반적인 파이프라인
     else:
         with open(USER_MOCK_DATA_PATH, "r", encoding="utf-8") as f:
             mock_list = [json.loads(line) for line in f if line.strip()]

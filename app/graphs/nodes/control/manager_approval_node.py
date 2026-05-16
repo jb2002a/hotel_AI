@@ -2,7 +2,7 @@ from app.schemas.graph_state import EmailAgentState
 from langgraph.types import interrupt
 
 
-def approval_node(state: EmailAgentState) -> dict:
+def manager_approval_node(state: EmailAgentState) -> dict:
     approval_packet = {
         "email_data": state.get("email_data"),
         "extract_data": state.get("extract_data"),
@@ -15,7 +15,6 @@ def approval_node(state: EmailAgentState) -> dict:
     }
     # 평가를 위해 조기 return 처리, 후에 하단 코드 추가
     return {"approval_packet": approval_packet}
-
 
     resume_payload = interrupt(
         {

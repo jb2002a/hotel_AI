@@ -97,8 +97,8 @@ def _build_delete_sql(email: str) -> str:
     )
 
 
-@traceable(name="booking_plan_node")
-def booking_plan_node(state: EmailAgentState) -> dict:
+@traceable(name="reservation_sql_node")
+def reservation_sql_node(state: EmailAgentState) -> dict:
     actions_raw = state.get("actions")
     actions = set(actions_raw if isinstance(actions_raw, list) else [])
 

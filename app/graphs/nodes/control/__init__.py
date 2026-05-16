@@ -1,3 +1,3 @@
-from .approval_node import approval_node
+from .manager_approval_node import manager_approval_node
 
-__all__ = ["approval_node"]
+__all__ = ["manager_approval_node"]

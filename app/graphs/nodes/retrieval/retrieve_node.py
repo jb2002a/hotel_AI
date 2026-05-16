@@ -6,8 +6,8 @@ from app.services.db_service import get_member_and_booking_by_email, get_vacant_
 from app.services.vector_store_service import get_vector_store_from_chroma
 
 
-@traceable(name="vector_retrieve")
-def vector_retrieve(state: EmailAgentState) -> dict:
+@traceable(name="policy_retrieve")
+def policy_retrieve(state: EmailAgentState) -> dict:
     email_data = state["email_data"]
     query = f"{email_data['email_subject']}\n{email_data['email_content']}"
     vector_store = get_vector_store_from_chroma()
@@ -15,8 +15,8 @@ def vector_retrieve(state: EmailAgentState) -> dict:
     return {"vector_retrieve_results": search_results}
 
 
-@traceable(name="db_retrieve")
-def db_retrieve(state: EmailAgentState) -> dict:
+@traceable(name="member_booking_retrieve")
+def member_booking_retrieve(state: EmailAgentState) -> dict:
     email_data = state["email_data"]
     email = email_data["sender_email"]
     try:
@@ -26,7 +26,7 @@ def db_retrieve(state: EmailAgentState) -> dict:
     return {"db_retrieve_results": member_and_bookings}
 
 
-@traceable(name="retrieve_rest_rooms")
-def retrieve_rest_rooms(state: EmailAgentState) -> dict:
+@traceable(name="vacancy_retrieve")
+def vacancy_retrieve(state: EmailAgentState) -> dict:
     vacant_room_count = get_vacant_room_count()
     return {"rest_room_retrieve_results": {"vacant_room_count": vacant_room_count}}
