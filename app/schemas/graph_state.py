@@ -13,7 +13,7 @@ class EmailData(TypedDict):
     sender_email: str
 
 
-# 이메일 분류 결과 래퍼
+# intent 분류 결과
 class EmailClassification(TypedDict):
     intents: list[
         Literal[
@@ -35,6 +35,7 @@ class EmailClassification(TypedDict):
     urgency: Literal["normal", "high"]
 
 
+# 액션 리터럴
 GraphActionLiteral = Literal[
     "vector_retrieve",
     "db_retrieve",
