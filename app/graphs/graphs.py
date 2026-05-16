@@ -3,22 +3,19 @@
 플로우
 ------
 START
-  → email_ingest
-       ├─ (정상) Command → intent_classifier
-       └─ (BusinessError) Command → manager_approval
+  → email_ingestㅁ
   → intent_classifier     분류 + intent → actions 고정 매핑
   → prepare               actions 기반 retrieve 병렬 + 예약 SQL 생성
   → reply_draft           답변 초안 (business_error 시 no-op)
   → manager_approval      approval_packet 스냅샷 (+ interrupt, UI)
   → END
-
-prepare 내부 retrieve (별도 그래프 노드 아님):
-  policy_retrieve | member_booking_retrieve | vacancy_retrieve
 """
 
 from collections.abc import Callable
+from typing import Any
 
 from langgraph.graph import END, START, StateGraph
+from langgraph.types import Command
 
 from app.errors import BusinessError
 from app.graphs.nodes.control import manager_approval_node
@@ -32,17 +29,22 @@ from app.schemas.graph_state import EmailAgentState
 # ---------------------------------------------------------------------------
 
 # 자식 노드에서 던진 BusinessError를 그래프 중단 없이 state에 기록
-def _guard_business_error(node_fn: Callable[[EmailAgentState], dict]) -> Callable[[EmailAgentState], dict]:
-    def _wrapped(state: EmailAgentState) -> dict:
+def _guard_business_error(
+    node_fn: Callable[[EmailAgentState], dict[str, Any] | Command[Any]],
+) -> Callable[[EmailAgentState], dict[str, Any] | Command[Any]]:
+    def _wrapped(state: EmailAgentState) -> dict[str, Any] | Command[Any]:
         try:
             return node_fn(state)
         except BusinessError as exc:
-            return {
-                "business_error": {
-                    "code": exc.code,
-                    "message": exc.message,
-                }
-            }
+            return Command(
+                update={
+                    "business_error": {
+                        "code": exc.code,
+                        "message": exc.message,
+                    }
+                },
+                goto="manager_approval_node",
+            )
 
     return _wrapped
 
@@ -74,6 +76,10 @@ graph.add_edge("prepare_node", "reply_draft_node")
 graph.add_edge("reply_draft_node", "manager_approval_node")
 
 graph.add_edge("manager_approval_node", END)
+
+#---------------------------------------------------------------------------#
+
+# For Testing
 
 
 def _default_initial_state() -> dict:
