@@ -3,7 +3,7 @@
 플로우
 ------
 START
-  → email_ingestㅁ
+  → email_ingest
   → intent_classifier     분류 + intent → actions 고정 매핑
   → prepare               actions 기반 retrieve 병렬 + 예약 SQL 생성
   → reply_draft           답변 초안 (business_error 시 no-op)
@@ -52,7 +52,7 @@ def _guard_business_error(
 graph = StateGraph(EmailAgentState)
 
 # Intake
-graph.add_node("email_ingest_node", email_ingest)  # Command goto로 분기
+graph.add_node("email_ingest_node", _guard_business_error(email_ingest))
 graph.add_node("intent_classifier_node", _guard_business_error(intent_classifier_node))
 
 # Prepare (retrieve + SQL은 prepare_node 내부에서 actions 기준 실행)
@@ -68,8 +68,8 @@ graph.add_node("manager_approval_node", manager_approval_node)
 # 엣지
 # ---------------------------------------------------------------------------
 
-# Entry: email_ingest → intent_classifier | manager_approval 은 Command(goto)로 연결
 graph.add_edge(START, "email_ingest_node")
+graph.add_edge("email_ingest_node", "intent_classifier_node")
 
 graph.add_edge("intent_classifier_node", "prepare_node")
 graph.add_edge("prepare_node", "reply_draft_node")
