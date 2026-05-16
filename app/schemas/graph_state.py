@@ -1,6 +1,6 @@
 # V1 플로우
 
-# email_ingest -> intent_classifier(actions 고정) -> (policy/member_booking/vacancy retrieve*) -> reservation_sql / reply_draft -> manager_approval -> END
+# email_ingest -> intent_classifier(actions 고정) -> prepare(retrieve + sql) -> reply_draft -> manager_approval -> END
 
 
 

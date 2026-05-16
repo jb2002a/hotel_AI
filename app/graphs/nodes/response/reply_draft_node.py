@@ -10,6 +10,9 @@ _tem_manager_name = "김아영"
 
 @traceable(name="reply_draft_node")
 def reply_draft_node(state: EmailAgentState) -> dict:
+    if state.get("business_error"):
+        return {}
+
     vector_docs = state.get("vector_retrieve_results")
     db_payload = state.get("db_retrieve_results")
     rest_room_payload = state.get("rest_room_retrieve_results")

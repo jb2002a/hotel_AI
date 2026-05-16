@@ -1,5 +1,3 @@
-from langsmith import traceable
-
 from app.errors import BusinessError
 from app.schemas.graph_state import ActionSQLite, EmailAgentState
 
@@ -97,10 +95,10 @@ def _build_delete_sql(email: str) -> str:
     )
 
 
-@traceable(name="reservation_sql_node")
-def reservation_sql_node(state: EmailAgentState) -> dict:
-    actions_raw = state.get("actions")
-    actions = set(actions_raw if isinstance(actions_raw, list) else [])
+def build_action_sqlite(state: EmailAgentState, actions: set[str]) -> dict | None:
+    has_booking = actions & {"reservation_create", "reservation_update", "reservation_delete"}
+    if not has_booking:
+        return None
 
     needs_dates = "reservation_create" in actions or "reservation_update" in actions
     email, check_in, check_out = _require_fields(state, require_dates=needs_dates)

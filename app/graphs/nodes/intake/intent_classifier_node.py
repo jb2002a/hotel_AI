@@ -72,6 +72,16 @@ Do not use any label outside the allowed lists above.
     intents_raw: list[str] = classification.get("intents") or []
     actions = intents_to_actions(intents_raw)
 
+    if classification["category"] == "spam":
+        return {
+            "classification": classification,
+            "actions": [],
+            "business_error": {
+                "code": "SPAM",
+                "message": "스팸으로 분류된 이메일입니다.",
+            },
+        }
+
     return {
         "classification": classification,
         "actions": actions,
