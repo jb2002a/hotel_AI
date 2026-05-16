@@ -80,7 +80,7 @@ class ApprovalUI:
         plan_frame.pack(fill="x", padx=12, pady=(0, 4))
         tk.Label(
             plan_frame,
-            text="플랜 액션 (state.plan.actions)",
+            text="그래프 액션 (state.actions)",
             anchor="w",
         ).pack(anchor="w")
         self.plan_actions_text = scrolledtext.ScrolledText(
@@ -135,10 +135,9 @@ class ApprovalUI:
         self.plan_actions_text.insert("1.0", value)
         self.plan_actions_text.configure(state=tk.DISABLED)
 
-    def _format_plan_for_ui(self, plan: dict | None) -> str:
-        if not plan:
-            return "(plan 없음)"
-        actions = plan.get("actions")
+    def _format_actions_for_ui(self, actions: list[str] | None) -> str:
+        if actions is None:
+            return "(actions 없음)"
         if not actions:
             return "(액션 목록 비어 있음)"
         return "\n".join(f"- {a}" for a in actions)
@@ -165,7 +164,7 @@ class ApprovalUI:
             },
             "extract_data": None,
             "classification": None,
-            "plan": None,
+            "actions": None,
             "vector_retrieve_results": None,
             "db_retrieve_results": None,
             "rest_room_retrieve_results": None,
@@ -203,12 +202,16 @@ class ApprovalUI:
         )
 
         packet = self._extract_interrupt_payload(result)
-        plan = None
+        actions_preview: list[str] | None = None
         if isinstance(packet, dict):
-            plan = packet.get("plan")
-        if plan is None and isinstance(result, dict):
-            plan = result.get("plan")
-        self._set_plan_actions_text(self._format_plan_for_ui(plan))
+            raw = packet.get("actions")
+            if isinstance(raw, list):
+                actions_preview = raw
+        if actions_preview is None and isinstance(result, dict):
+            raw = result.get("actions")
+            if isinstance(raw, list):
+                actions_preview = raw
+        self._set_plan_actions_text(self._format_actions_for_ui(actions_preview))
 
         if packet is None:
             self.last_packet = None

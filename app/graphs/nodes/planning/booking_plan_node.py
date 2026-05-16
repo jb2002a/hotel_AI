@@ -99,8 +99,8 @@ def _build_delete_sql(email: str) -> str:
 
 @traceable(name="booking_plan_node")
 def booking_plan_node(state: EmailAgentState) -> dict:
-    plan = state.get("plan") or {}
-    actions = set(plan.get("actions", []))
+    actions_raw = state.get("actions")
+    actions = set(actions_raw if isinstance(actions_raw, list) else [])
 
     needs_dates = "reservation_create" in actions or "reservation_update" in actions
     email, check_in, check_out = _require_fields(state, require_dates=needs_dates)

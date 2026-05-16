@@ -15,7 +15,7 @@ EMBEDING_MODEL = "BAAI/bge-m3"
 CHROMA_DB_PATH = "./chroma_db"
 CHROMA_COLLECTION_NAME = "guideline_collection"
 
-LLM = ChatOpenAI(model="gpt-4o-mini")
+LLM = ChatOpenAI(model="gpt-4o-mini", temperature=0.0)
 
 EM_EVAL_OUT_DIR = BASE_DIR / "artifacts" / "eval"
 EM_EVAL_INDICES: list[int] | None = None

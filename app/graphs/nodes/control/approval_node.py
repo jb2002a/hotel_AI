@@ -6,7 +6,7 @@ def approval_node(state: EmailAgentState) -> dict:
     approval_packet = {
         "email_data": state.get("email_data"),
         "extract_data": state.get("extract_data"),
-        "plan": state.get("plan"),
+        "actions": state.get("actions"),
         "db_retrieve_results": state.get("db_retrieve_results"),
         "rest_room_retrieve_results": state.get("rest_room_retrieve_results"),
         "action_sqlite": state.get("action_sqlite"),

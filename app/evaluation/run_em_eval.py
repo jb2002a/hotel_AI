@@ -33,7 +33,7 @@ def target(inputs: dict) -> dict:
             "business_error_code": (business_error or {}).get("code"),
         },
         "extract_data": state.get("extract_data"),
-        "plan_actions": (state.get("plan") or {}).get("actions", []),
+        "plan_actions": list(state.get("actions") or []),
     }
 
 
@@ -58,7 +58,7 @@ if __name__ == "__main__":
         data="hotel_ai_eval_dataset_happy_path",
         evaluators=[eval_em],
         experiment_prefix="hotel_ai_em_eval",
-        max_concurrency=1,
+        max_concurrency=4,
     )
 
     print("Evaluation completed")
