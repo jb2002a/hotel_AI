@@ -1,52 +1,26 @@
 from typing import Any, Iterable
 
 from app.config.config import LLM
-from app.schemas.graph_state import EmailAgentState, EmailClassification, GraphActionLiteral
+from app.schemas.graph_state import (
+    EmailAgentState,
+    EmailClassification,
+    GraphActionLiteral,
+    INTENT_ACTION_MAP,
+)
 from langgraph.types import Command
 from langsmith import traceable
 
-# 분류 결과 intent 집합 (멀티 intent 우선 규칙용)
-_INFO = frozenset(
-    {
-        "policy_qna",
-        "payment_invoice",
-        "promotion_pricing",
-        "special_request",
-        "complaint_or_incident",
-    }
-)
-_AMBIG = frozenset({"out_of_scope", "unclear", "other"})
-
 
 def intents_to_actions(intents: Iterable[str]) -> list[GraphActionLiteral]:
-    """intent → 그래프 액션 고정 매핑. 멀티 intent 시 정보성(_INFO, booking_lookup) 우선으로 예약 실행 액션을 억제."""
-    intent_set = set(intents)
-
-    actions: list[GraphActionLiteral] = []
-
-    has_info_tail = bool(intent_set & _INFO)
-    # 정보성 intent 또는 booking_lookup이 있으면: 예약 실행 없이 해당 조회만
-    if has_info_tail or ("booking_lookup" in intent_set):
-        if intent_set & _INFO:
-            actions.append("vector_retrieve")
-        if "booking_lookup" in intent_set:
-            actions.append("db_retrieve")
-        return actions
-
-    # 예약 실행 (최대 1종; 우선순위 고정)
-    for pref in ("reservation_delete", "reservation_update", "reservation_create"):
-        if pref in intent_set:
-            if pref == "reservation_create":
-                return ["retrieve_rest_rooms", "reservation_create"]
-            if pref == "reservation_update":
-                return ["db_retrieve", "reservation_update"]
-            return ["db_retrieve", "reservation_delete"]
-
-    # booking_lookup 단독은 위 분기 전에 처리됨; 예약 의도 없고 조회만
-    if intent_set <= _AMBIG or not intent_set:
-        return []
-
-    return []
+    """intent 목록을 INTENT_ACTION_MAP에서 조회해 중복 없이 합산한다."""
+    seen: set[GraphActionLiteral] = set()
+    result: list[GraphActionLiteral] = []
+    for intent in intents:
+        for action in INTENT_ACTION_MAP.get(intent, []):
+            if action not in seen:
+                seen.add(action)
+                result.append(action)
+    return result
 
 
 @traceable(name="intent_classifier_node")

@@ -45,6 +45,22 @@ GraphActionLiteral = Literal[
     "reservation_delete",
 ]
 
+# EmailClassification.intents Literal과 1:1 대응
+INTENT_ACTION_MAP: dict[str, list[GraphActionLiteral]] = {
+    "policy_qna": ["vector_retrieve"],
+    "booking_lookup": ["db_retrieve"],
+    "reservation_create": ["retrieve_rest_rooms", "reservation_create"],
+    "reservation_update": ["db_retrieve", "reservation_update"],
+    "reservation_delete": ["db_retrieve", "reservation_delete"],
+    "payment_invoice": ["vector_retrieve"],
+    "promotion_pricing": ["vector_retrieve"],
+    "special_request": ["vector_retrieve"],
+    "complaint_or_incident": ["vector_retrieve"],
+    "out_of_scope": [],
+    "unclear": [],
+    "other": [],
+}
+
 
 class ActionSQLite(TypedDict):
     create_sql: str
