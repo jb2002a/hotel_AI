@@ -7,7 +7,7 @@ START
   → intent_classifier     분류 + intent → actions 고정 매핑
   → prepare               actions 기반 retrieve 병렬 + 예약 SQL 생성
   → reply_draft           답변 초안 (business_error 시 no-op)
-  → manager_approval      approval_packet 스냅샷 (+ interrupt, UI)
+  → manager_approval      interrupt/UI용 payload (+ interrupt, UI)
   → END
 """
 
@@ -22,7 +22,7 @@ from app.graphs.nodes.control import manager_approval_node
 from app.graphs.nodes.intake import email_ingest, intent_classifier_node
 from app.graphs.nodes.prepare import prepare_node
 from app.graphs.nodes.response import reply_draft_node
-from app.schemas.graph_state import EmailAgentState
+from app.schemas.graph_state import EmailAgentState, build_approval_payload
 
 # ---------------------------------------------------------------------------
 # 노드
@@ -97,7 +97,6 @@ def _default_initial_state() -> dict:
         "rest_room_retrieve_results": None,
         "action_sqlite": None,
         "draft_response": None,
-        "approval_packet": None,
         "manager_comment": None,
         "business_error": None,
     }
@@ -107,4 +106,4 @@ if __name__ == "__main__":
     # python -m app.graphs.graphs
     compiled_graph = graph.compile()
     result = compiled_graph.invoke(_default_initial_state())
-    print(result.get("approval_packet"))
+    print(build_approval_payload(result))

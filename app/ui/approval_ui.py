@@ -10,8 +10,8 @@ try:
 except ImportError:
     from langgraph.checkpoint.memory import MemorySaver as _MemorySaver
 
-from app.config.config import USER_MOCK_DATA_PATH
 from app.graphs.graphs import graph
+from app.schemas.graph_state import build_approval_payload
 
 
 class ApprovalUI:
@@ -25,16 +25,7 @@ class ApprovalUI:
         self.compiled_graph = graph.compile(checkpointer=_MemorySaver())
 
         self.last_packet: dict | None = None
-        self._mock_email_max_idx = self._load_mock_email_max_idx()
         self._build_widgets()
-
-    def _load_mock_email_max_idx(self) -> int:
-        try:
-            with open(USER_MOCK_DATA_PATH, "r", encoding="utf-8") as f:
-                data = [json.loads(line) for line in f if line.strip()]
-            return max(0, len(data) - 1)
-        except (OSError, json.JSONDecodeError, TypeError):
-            return 0
 
     def _build_widgets(self) -> None:
         top_frame = tk.Frame(self.root)
@@ -42,21 +33,6 @@ class ApprovalUI:
 
         self.thread_label = tk.Label(top_frame, text=f"thread_id: {self.thread_id}")
         self.thread_label.pack(side="left")
-
-        mock_frame = tk.Frame(top_frame)
-        mock_frame.pack(side="left", padx=(16, 0))
-        tk.Label(mock_frame, text="mock 이메일 인덱스:").pack(side="left")
-        default_idx = "1" if self._mock_email_max_idx >= 1 else "0"
-        self.mock_email_spin = tk.Spinbox(
-            mock_frame,
-            from_=0,
-            to=self._mock_email_max_idx,
-            width=5,
-            justify="center",
-        )
-        self.mock_email_spin.delete(0, tk.END)
-        self.mock_email_spin.insert(0, default_idx)
-        self.mock_email_spin.pack(side="left", padx=(4, 0))
 
         start_button = tk.Button(
             top_frame,
@@ -170,18 +146,9 @@ class ApprovalUI:
             "rest_room_retrieve_results": None,
             "action_sqlite": None,
             "draft_response": None,
-            "approval_packet": None,
             "manager_comment": None,
             "business_error": None,
-            "mock_email_idx": self._read_mock_email_idx(),
         }
-
-    def _read_mock_email_idx(self) -> int:
-        raw = self.mock_email_spin.get().strip()
-        try:
-            return int(raw)
-        except ValueError:
-            return 1
 
     def start_request(self) -> None:
         self.thread_id = str(uuid.uuid4())
@@ -202,6 +169,9 @@ class ApprovalUI:
         )
 
         packet = self._extract_interrupt_payload(result)
+        if packet is None and isinstance(result, dict):
+            packet = build_approval_payload(result)
+
         actions_preview: list[str] | None = None
         if isinstance(packet, dict):
             raw = packet.get("actions")
@@ -215,7 +185,7 @@ class ApprovalUI:
 
         if packet is None:
             self.last_packet = None
-            self._set_text(self.packet_text, "(interrupt 없음)")
+            self._set_text(self.packet_text, "(승인 패킷 없음)")
             return
 
         self.last_packet = packet

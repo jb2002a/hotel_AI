@@ -1,31 +1,19 @@
-from app.schemas.graph_state import EmailAgentState
+from app.schemas.graph_state import EmailAgentState, build_approval_payload
 from langgraph.types import interrupt
 
 
 def manager_approval_node(state: EmailAgentState) -> dict:
-    approval_packet = {
-        "email_data": state.get("email_data"),
-        "extract_data": state.get("extract_data"),
-        "actions": state.get("actions"),
-        "db_retrieve_results": state.get("db_retrieve_results"),
-        "rest_room_retrieve_results": state.get("rest_room_retrieve_results"),
-        "action_sqlite": state.get("action_sqlite"),
-        "draft_response": state.get("draft_response"),
-        "business_error": state.get("business_error"),
-    }
+    payload = build_approval_payload(state)
     # 평가를 위해 조기 return 처리, 후에 하단 코드 추가
-    return {"approval_packet": approval_packet}
+    return {}
 
     resume_payload = interrupt(
         {
             "message": "매니저 승인/수정이 필요합니다. 수정 후 resume 해주세요.",
-            "payload": approval_packet,
+            "payload": payload,
         }
     )
-    updated_state: dict = {
-        "approval_packet": approval_packet,
-        "business_error": None,
-    }
+    updated_state: dict = {"business_error": None}
 
     if "draft_response" in resume_payload:
         updated_state["draft_response"] = resume_payload["draft_response"]

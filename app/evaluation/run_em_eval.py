@@ -8,6 +8,12 @@ from langsmith import evaluate
 compiled = graph.compile()
 
 
+def _extract_for_eval(data: dict | None) -> dict | None:
+    if data is None:
+        return None
+    return {"check_in": data.get("check_in"), "check_out": data.get("check_out")}
+
+
 def target(inputs: dict) -> dict:
     state = compiled.invoke(
         {
@@ -47,7 +53,13 @@ def eval_em(outputs: dict, reference_outputs: dict) -> list[dict]:
         {"key": "category_match", "score": int(clf_p.get("category") == clf_r.get("category"))},
         {"key": "urgency_match",  "score": int(clf_p.get("urgency")  == clf_r.get("urgency"))},
         {"key": "plan_match",     "score": int(set(outputs.get("plan_actions") or []) == set(reference_outputs.get("plan_actions") or []))},
-        {"key": "extract_match",  "score": int(outputs.get("extract_data") == reference_outputs.get("extract_data"))},
+        {
+            "key": "extract_match",
+            "score": int(
+                _extract_for_eval(outputs.get("extract_data"))
+                == _extract_for_eval(reference_outputs.get("extract_data"))
+            ),
+        },
         {"key": "outcome_match",  "score": int(out_p.get("should_succeed") == out_r.get("should_succeed"))},
     ]
 

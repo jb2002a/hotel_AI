@@ -1,7 +1,7 @@
 # V1 플로우
 # email_ingest -> intent_classifier(actions 고정) -> prepare(retrieve + sql) -> reply_draft -> manager_approval -> END
 
-from typing import Any, Literal, NotRequired, TypedDict
+from typing import Any, Literal, TypedDict
 
 from langchain_core.documents import Document
 
@@ -70,7 +70,6 @@ class ActionSQLite(TypedDict):
 
 # SQLite 회원/예약 조회 최소 래퍼
 class ExtractData(TypedDict):
-    name: str | None
     check_in: str | None
     check_out: str | None
 
@@ -80,20 +79,7 @@ class BusinessErrorPayload(TypedDict):
     message: str
 
 
-class ApprovalPacket(TypedDict):
-    email_data: EmailData
-    extract_data: ExtractData | None
-    actions: list[GraphActionLiteral] | None
-    db_retrieve_results: dict[str, Any] | None
-    rest_room_retrieve_results: dict[str, int] | None
-    action_sqlite: ActionSQLite | None
-    draft_response: str | None
-    business_error: BusinessErrorPayload | None
-
-
 class EmailAgentState(TypedDict):
-    mock_email_idx: NotRequired[int]
-
     # 고객의 이메일 데이터
     email_data: EmailData
 
@@ -121,11 +107,22 @@ class EmailAgentState(TypedDict):
     # 생성된 내용
     draft_response: str | None
 
-    # 승인 노드에서 UI에 노출할 패킷 스냅샷
-    approval_packet: ApprovalPacket | None
-
-    # 매니저 코멘트
+    # 매니저 코멘트 (interrupt resume 시 설정)
     manager_comment: str | None
 
     # 업무 예외 상태 (승인/검토 라우팅용)
     business_error: BusinessErrorPayload | None
+
+
+def build_approval_payload(state: EmailAgentState) -> dict[str, Any]:
+    """UI/interrupt용 승인 스냅샷. state에 중복 저장하지 않는다."""
+    return {
+        "email_data": state.get("email_data"),
+        "extract_data": state.get("extract_data"),
+        "actions": state.get("actions"),
+        "db_retrieve_results": state.get("db_retrieve_results"),
+        "rest_room_retrieve_results": state.get("rest_room_retrieve_results"),
+        "action_sqlite": state.get("action_sqlite"),
+        "draft_response": state.get("draft_response"),
+        "business_error": state.get("business_error"),
+    }
