@@ -36,6 +36,8 @@ def _run_retrieves(state: EmailAgentState, actions: set[str]) -> dict:
 
 @traceable(name="prepare_node")
 def prepare_node(state: EmailAgentState) -> dict:
+    """actions에 따라 벡터/DB 검색 및 SQL 생성 노드"""
+
     if state.get("business_error"):
         return {}
 
@@ -43,10 +45,13 @@ def prepare_node(state: EmailAgentState) -> dict:
     actions_list = actions_raw if isinstance(actions_raw, list) else []
     actions = set(actions_list)
 
+    # 벡터/DB 검색
     retrieve_results = _run_retrieves(state, actions)
     result = dict(retrieve_results)
 
     effective_state: EmailAgentState = {**state, **retrieve_results}
+    
+    # SQL 생성
     sql_result = build_action_sqlite(effective_state, actions)
     if sql_result:
         result.update(sql_result)

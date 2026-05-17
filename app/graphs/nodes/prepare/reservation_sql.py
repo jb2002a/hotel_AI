@@ -96,6 +96,8 @@ def _build_delete_sql(email: str) -> str:
 
 
 def build_action_sqlite(state: EmailAgentState, actions: set[str]) -> dict | None:
+    """예약 액션에 따라 SQL 생성"""
+
     has_booking = actions & {"reservation_create", "reservation_update", "reservation_delete"}
     if not has_booking:
         return None
@@ -113,8 +115,9 @@ def build_action_sqlite(state: EmailAgentState, actions: set[str]) -> dict | Non
         assert check_in is not None and check_out is not None
         rest = state.get("rest_room_retrieve_results") or {}
         room_count = rest.get("vacant_room_count")
-        if room_count is not None and room_count >= 1:
-            action_sqlite["create_sql"] = _build_create_sql(email, check_in, check_out)
+        if not room_count or room_count < 1:
+            raise BusinessError("현재 예약 가능한 객실이 없습니다.", code="NO_VACANCY")
+        action_sqlite["create_sql"] = _build_create_sql(email, check_in, check_out)
 
     if "reservation_update" in actions or "reservation_delete" in actions:
         _assert_booking_modify_context(state)

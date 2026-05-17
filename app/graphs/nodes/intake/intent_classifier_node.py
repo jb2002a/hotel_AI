@@ -13,18 +13,17 @@ from langsmith import traceable
 
 def intents_to_actions(intents: Iterable[str]) -> list[GraphActionLiteral]:
     """intent 목록을 INTENT_ACTION_MAP에서 조회해 중복 없이 합산한다."""
-    seen: set[GraphActionLiteral] = set()
-    result: list[GraphActionLiteral] = []
+    actions: set[GraphActionLiteral] = set()
     for intent in intents:
         for action in INTENT_ACTION_MAP.get(intent, []):
-            if action not in seen:
-                seen.add(action)
-                result.append(action)
-    return result
+            actions.add(action)
+    return list(actions)
 
 
 @traceable(name="intent_classifier_node")
 def intent_classifier_node(state: EmailAgentState) -> dict[str, Any] | Command[Any]:
+    """이메일 분류(urgency, category, intents) 노드"""
+    
     structured_llm = LLM.with_structured_output(EmailClassification)
     email_data = state["email_data"]
     classification_prompt = f"""
@@ -47,6 +46,7 @@ def intent_classifier_node(state: EmailAgentState) -> dict[str, Any] | Command[A
     intents_raw: list[str] = classification.get("intents") or []
     actions = intents_to_actions(intents_raw)
 
+    # 스팸 이메일인 경우 매니저 승인으로 바로 이동
     if classification["category"] == "spam":
         return Command(
             update={
@@ -60,6 +60,7 @@ def intent_classifier_node(state: EmailAgentState) -> dict[str, Any] | Command[A
             goto="manager_approval_node",
         )
 
+    # 긴급 이메일인 경우 매니저 승인으로 바로 이동
     if classification["urgency"] == "high":
         return Command(
             update={

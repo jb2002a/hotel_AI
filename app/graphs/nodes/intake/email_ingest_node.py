@@ -5,6 +5,8 @@ from langsmith import traceable
 
 @traceable(name="email_ingest")
 def email_ingest(state: EmailAgentState) -> dict:
+    """이메일 데이터(name, check_in, check_out) 추출 노드"""
+
     email_data = state["email_data"]
 
     extract_llm = LLM.with_structured_output(ExtractData)
@@ -12,6 +14,7 @@ def email_ingest(state: EmailAgentState) -> dict:
     Extract reservation-related fields from this customer email context.
 
     Return JSON with exactly these keys:
+    - name: The full name of the person who sent this email, as they identify themselves.
     - check_in (YYYY-MM-DD if inferable, else null)
     - check_out (YYYY-MM-DD if inferable, else null)
 

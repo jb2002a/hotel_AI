@@ -70,6 +70,7 @@ class ActionSQLite(TypedDict):
 
 # SQLite 회원/예약 조회 최소 래퍼
 class ExtractData(TypedDict):
+    name: str | None
     check_in: str | None
     check_out: str | None
 
