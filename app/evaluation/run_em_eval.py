@@ -77,7 +77,7 @@ if __name__ == "__main__":
     # python -m app.evaluation.run_em_eval
     evaluate(
         target,
-        data="hotel_ai_eval_dataset_happy_path",
+        data="hotel_ai_email_dataset",
         evaluators=[eval_em],
         experiment_prefix="hotel_ai_em_eval",
         max_concurrency=4,
