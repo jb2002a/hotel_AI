@@ -6,12 +6,12 @@ load_dotenv(override=True)
 client = Client()
 
 dataset = client.create_dataset(
-    dataset_name="hotel_ai_eval_dataset_happy_path",
-    description="호텔 AI 이메일 처리 평가 데이터셋"
+    dataset_name="hotel_ai_email_dataset",
+    description="호텔 AI 메일 데이터셋"
 )
 
 examples = []
-with open("resoruces/happy_mock_dataset.jsonl", "r", encoding="utf-8") as f:
+with open("resoruces/mail_dataset.jsonl", "r", encoding="utf-8") as f:
     for line in f:
         record = json.loads(line.strip())
         examples.append({

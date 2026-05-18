@@ -29,6 +29,7 @@ def target(inputs: dict) -> dict:
     intents: list = clf.get("intents") or []
 
     return {
+        "intents": intents,
         "intent": intents[0] if intents else None,
         "classification": {
             "category": clf.get("category"),
@@ -48,8 +49,17 @@ def eval_em(outputs: dict, reference_outputs: dict) -> list[dict]:
     clf_r = reference_outputs.get("classification") or {}
     out_p = outputs.get("expected_outcome") or {}
     out_r = reference_outputs.get("expected_outcome") or {}
+    pred_intents = outputs.get("intents") or ([outputs.get("intent")] if outputs.get("intent") else [])
+    ref_intents = reference_outputs.get("intents") or (
+        [reference_outputs.get("intent")] if reference_outputs.get("intent") else []
+    )
+    pred_set = set(pred_intents)
+    ref_set = set(ref_intents)
+    intent_score = 0.0
+    if pred_set or ref_set:
+        intent_score = len(pred_set & ref_set) / len(pred_set | ref_set)
     return [
-        {"key": "intent_match",   "score": int(outputs.get("intent") == reference_outputs.get("intent"))},
+        {"key": "intent_match",   "score": intent_score},
         {"key": "category_match", "score": int(clf_p.get("category") == clf_r.get("category"))},
         {"key": "urgency_match",  "score": int(clf_p.get("urgency")  == clf_r.get("urgency"))},
         {"key": "plan_match",     "score": int(set(outputs.get("plan_actions") or []) == set(reference_outputs.get("plan_actions") or []))},
