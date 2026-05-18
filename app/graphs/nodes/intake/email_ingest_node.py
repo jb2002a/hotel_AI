@@ -11,15 +11,23 @@ def email_ingest(state: EmailAgentState) -> dict:
 
     extract_llm = LLM.with_structured_output(ExtractData)
     extract_prompt = f"""
-    Extract reservation-related fields from this customer email context.
+    Extract reservation fields from one hotel customer email.
+    Return only the structured fields requested by the schema.
 
-    Return JSON with exactly these keys:
-    - name: The full name of the person who sent this email, as they identify themselves.
-    - check_in (YYYY-MM-DD if inferable, else null)
-    - check_out (YYYY-MM-DD if inferable, else null)
-
+    [Email]
     Subject: {email_data["email_subject"]}
     Body: {email_data["email_content"]}
+
+    [Fields to extract]
+    - name: the customer's full name, only if the customer states it in the email. If not found, use null.
+    - check_in: check-in date in YYYY-MM-DD format, only if the date is clearly stated or directly inferable. If not found, use null.
+    - check_out: check-out date in YYYY-MM-DD format, only if the date is clearly stated or directly inferable. If not found, use null.
+
+    [Rules]
+    1. Do not guess missing values.
+    2. Do not use the sender email address as the customer's name.
+    3. If the email mentions only one date, fill only the matching field and set the other date to null.
+    4. Keep all unknown fields as null.
     """
     extract_data = extract_llm.invoke(extract_prompt)
 

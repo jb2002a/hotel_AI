@@ -30,6 +30,7 @@ def target(inputs: dict) -> dict:
 
     return {
         "intent": intents[0] if intents else None,
+        "intents": intents,
         "classification": {
             "category": clf.get("category"),
             "urgency": clf.get("urgency"),

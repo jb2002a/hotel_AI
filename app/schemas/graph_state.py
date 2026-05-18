@@ -28,7 +28,6 @@ class EmailClassification(TypedDict):
             "complaint_or_incident",
             "out_of_scope",
             "unclear",
-            "other",
         ]
     ]
     category: Literal["normal", "spam"]
@@ -58,7 +57,6 @@ INTENT_ACTION_MAP: dict[str, list[GraphActionLiteral]] = {
     "complaint_or_incident": ["vector_retrieve"],
     "out_of_scope": [],
     "unclear": [],
-    "other": [],
 }
 
 

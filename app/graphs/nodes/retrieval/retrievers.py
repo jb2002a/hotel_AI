@@ -1,3 +1,5 @@
+"""prepare_node에서 actions에 따라 병렬 호출하는 검색 헬퍼."""
+
 from langsmith import traceable
 
 from app.errors import BusinessError
@@ -8,7 +10,7 @@ from app.services.vector_store_service import get_vector_store_from_chroma
 
 @traceable(name="policy_retrieve")
 def policy_retrieve(state: EmailAgentState) -> dict:
-    email_data = state["email_data"]
+    email_data = state["email_data"]    
     query = f"{email_data['email_subject']}\n{email_data['email_content']}"
     try:
         vector_store = get_vector_store_from_chroma()
