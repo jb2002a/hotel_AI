@@ -30,7 +30,6 @@ def target(inputs: dict) -> dict:
 
     return {
         "intents": intents,
-        "intent": intents[0] if intents else None,
         "classification": {
             "category": clf.get("category"),
             "urgency": clf.get("urgency"),
@@ -49,10 +48,8 @@ def eval_em(outputs: dict, reference_outputs: dict) -> list[dict]:
     clf_r = reference_outputs.get("classification") or {}
     out_p = outputs.get("expected_outcome") or {}
     out_r = reference_outputs.get("expected_outcome") or {}
-    pred_intents = outputs.get("intents") or ([outputs.get("intent")] if outputs.get("intent") else [])
-    ref_intents = reference_outputs.get("intents") or (
-        [reference_outputs.get("intent")] if reference_outputs.get("intent") else []
-    )
+    pred_intents = outputs.get("intents") or []
+    ref_intents = reference_outputs.get("intents") or []
     pred_set = set(pred_intents)
     ref_set = set(ref_intents)
     intent_score = 0.0
