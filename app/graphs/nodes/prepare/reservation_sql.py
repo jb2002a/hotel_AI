@@ -54,14 +54,25 @@ def _assert_booking_modify_context(state: EmailAgentState) -> None:
         )
 
 
-def _build_create_sql(email: str, check_in: str, check_out: str) -> str:
+def _build_create_sql(
+    email: str,
+    check_in: str,
+    check_out: str,
+    name: str | None = None,
+) -> str:
+    email_escaped = email.replace("'", "''")
+    if name and str(name).strip():
+        name_escaped = str(name).strip().replace("'", "''")
+        name_sql = f"'{name_escaped}'"
+    else:
+        name_sql = "NULL"
     return f"""
     INSERT OR IGNORE INTO members (email, name)
-    VALUES ('{email}', NULL);
+    VALUES ('{email_escaped}', {name_sql});
 
     UPDATE room_booking
     SET
-    member_id = (SELECT id FROM members WHERE email = '{email}'),
+    member_id = (SELECT id FROM members WHERE email = '{email_escaped}'),
     status = 'occupied',
     check_in = '{check_in}',
     check_out = '{check_out}'
@@ -117,7 +128,11 @@ def build_action_sqlite(state: EmailAgentState, actions: set[str]) -> dict | Non
         room_count = rest.get("vacant_room_count")
         if not room_count or room_count < 1:
             raise BusinessError("현재 예약 가능한 객실이 없습니다.", code="NO_VACANCY")
-        action_sqlite["create_sql"] = _build_create_sql(email, check_in, check_out)
+        extract_data = state.get("extract_data") or {}
+        guest_name = extract_data.get("name")
+        action_sqlite["create_sql"] = _build_create_sql(
+            email, check_in, check_out, guest_name
+        )
 
     if "reservation_update" in actions or "reservation_delete" in actions:
         _assert_booking_modify_context(state)
