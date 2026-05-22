@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 
 load_dotenv(override=True)
 
+from app.config.config import LLM
 from app.graphs.graphs import graph
 from langsmith import evaluate
 
@@ -72,6 +73,7 @@ def eval_em(outputs: dict, reference_outputs: dict) -> list[dict]:
 
 if __name__ == "__main__":
     # python -m app.evaluation.run_em_eval
+    print(f"Using LLM: {LLM.model_name}")
     evaluate(
         target,
         data="hotel_ai_email_dataset",
