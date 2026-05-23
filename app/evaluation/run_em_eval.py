@@ -71,8 +71,8 @@ def eval_em(outputs: dict, reference_outputs: dict) -> list[dict]:
         {"key": "outcome_match",  "score": int(out_p.get("should_succeed") == out_r.get("should_succeed"))},
     ]
 
-if __name__ == "__main__":
-    # python -m app.evaluation.run_em_eval
+def run_evaluation() -> None:
+    """LangSmith 데이터셋으로 EM 평가를 실행한다."""
     print(f"Using LLM: {LLM.model_name}")
     evaluate(
         target,
@@ -81,5 +81,9 @@ if __name__ == "__main__":
         experiment_prefix="hotel_ai_em_eval",
         max_concurrency=4,
     )
-
     print("Evaluation completed")
+
+
+if __name__ == "__main__":
+    # python -m app.evaluation.run_em_eval
+    run_evaluation()
