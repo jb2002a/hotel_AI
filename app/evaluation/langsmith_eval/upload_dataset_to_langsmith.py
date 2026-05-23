@@ -33,12 +33,12 @@ def upload_dataset() -> int:
             examples.append({
                 "inputs": record["input"],
                 "outputs": record["ground_truth"],
+                "metadata": {"id": record["id"]},
             })
 
     client.create_examples(
-        inputs=[e["inputs"] for e in examples],
-        outputs=[e["outputs"] for e in examples],
         dataset_id=dataset.id,
+        examples=examples,
     )
 
     print(f"✅ {len(examples)}개 예제 업로드 완료 (dataset: {DATASET_NAME})")

@@ -94,7 +94,7 @@ def fetch_errors(
             if fb.key in metrics and fb.score is not None:
                 score_map[str(run.id)][fb.key] = fb.score
 
-    # reference example 캐시 (API 호출 최소화): ex_id -> {outputs, sample_id}
+    # reference example 캐시 (API 호출 최소화): ex_id -> {outputs, id}
     example_cache: dict[str, dict] = {}
 
     errors = []
@@ -109,21 +109,29 @@ def fetch_errors(
 
         # reference 데이터 가져오기
         ref_outputs = {}
+        sample_id = ""
         if run.reference_example_id:
             ex_id = str(run.reference_example_id)
             if ex_id not in example_cache:
                 try:
                     ex = client.read_example(ex_id)
-                    example_cache[ex_id] = ex.outputs or {}
+                    meta = ex.metadata or {}
+                    example_cache[ex_id] = {
+                        "outputs": ex.outputs or {},
+                        "id": meta.get("id", ""),
+                    }
                 except Exception:
-                    example_cache[ex_id] = {}
-            ref_outputs = example_cache[ex_id]
+                    example_cache[ex_id] = {"outputs": {}, "id": ""}
+            cached = example_cache[ex_id]
+            ref_outputs = cached["outputs"]
+            sample_id = cached["id"]
 
         inputs = run.inputs or {}
         outputs = run.outputs or {}
 
         row = {
             "run_id": run_id[:8],
+            "id": sample_id,
             "failed_metrics": failed_metrics,
             "subject": inputs.get("subject", ""),
             "body": inputs.get("body", "")[:80],
@@ -176,6 +184,8 @@ def print_report(errors: list[dict], metrics: list[str]) -> None:
     for i, e in enumerate(errors, 1):
         scores_str = ", ".join(f"{k}={v}" for k, v in e["failed_metrics"].items())
         print(f"[{i:>3}] {scores_str}")
+        if e.get("id"):
+            print(f"      id      : {e['id']}")
         print(f"      subject : {e['subject']}")
         print(f"      body    : {e['body']}")
         for metric in e["failed_metrics"]:
