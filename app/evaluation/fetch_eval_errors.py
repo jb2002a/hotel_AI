@@ -13,6 +13,7 @@
 
 import argparse
 import json
+import sys
 from collections import defaultdict
 
 from dotenv import load_dotenv
@@ -33,10 +34,15 @@ ALL_METRICS = [
     "outcome_match",
 ]
 
+# run_em_eval target / dataset outputs와 동일한 필드
+OUTPUT_FIELDS = [
+    "intents",
+    "classification",
+    "expected_outcome",
+    "extract_data",
+    "plan_actions",
+]
 
-# ──────────────────────────────────────────────
-# 1. 실험 목록 출력
-# ──────────────────────────────────────────────
 
 def list_experiments() -> None:
     """LangSmith에서 조회 가능한 실험(프로젝트) 목록을 출력한다."""
@@ -49,9 +55,16 @@ def list_experiments() -> None:
         print(f"{i:<4} {p.name:<45} {created}")
 
 
-# ──────────────────────────────────────────────
-# 2. 실패 케이스 조회
-# ──────────────────────────────────────────────
+def _build_field_pairs(ref_outputs: dict, outputs: dict) -> dict:
+    """outputs의 모든 필드를 reference / prediction 쌍으로 묶는다."""
+    pairs = {}
+    for field in OUTPUT_FIELDS:
+        pairs[field] = {
+            "reference": ref_outputs.get(field),
+            "prediction": outputs.get(field),
+        }
+    return pairs
+
 
 def fetch_errors(
     experiment_name: str,
@@ -61,15 +74,9 @@ def fetch_errors(
     """
     실험에서 지정한 메트릭 중 하나라도 threshold 미만인 run을 반환한다.
 
-    Args:
-        experiment_name: LangSmith 실험(프로젝트) 이름
-        metrics: 확인할 메트릭 키 리스트 (예: ["intent_match", "plan_match"])
-        threshold: 이 값 미만이면 실패로 간주 (기본 1.0 = 완벽 일치만 통과)
-
     Returns:
-        실패 케이스 딕셔너리 리스트
+        실패 케이스 딕셔너리 리스트 (id, run_id, input, failed_metrics, fields)
     """
-    # 실험 존재 여부 확인
     matched = [p for p in client.list_projects() if p.name == experiment_name]
     if not matched:
         raise ValueError(
@@ -80,21 +87,18 @@ def fetch_errors(
     experiment = matched[0]
     print(f"\n실험: {experiment.name}")
 
-    # 최상위 run 전체 조회 (execution_order=1 이 최상위)
     runs = list(client.list_runs(
         project_name=experiment_name,
         is_root=True,
     ))
-    print(f"총 {len(runs)}개 run 조회됨 → 피드백 수집 중...")
+    print(f"총 {len(runs)}개 run 조회됨 -> 피드백 수집 중...")
 
-    # run_id → {metric: score} 매핑
     score_map: dict[str, dict[str, float]] = defaultdict(dict)
     for run in runs:
         for fb in client.list_feedback(run_ids=[str(run.id)]):
             if fb.key in metrics and fb.score is not None:
                 score_map[str(run.id)][fb.key] = fb.score
 
-    # reference example 캐시 (API 호출 최소화): ex_id -> {outputs, id}
     example_cache: dict[str, dict] = {}
 
     errors = []
@@ -102,12 +106,10 @@ def fetch_errors(
         run_id = str(run.id)
         scores = score_map.get(run_id, {})
 
-        # 지정 메트릭 중 하나라도 threshold 미만이면 포함
         failed_metrics = {k: v for k, v in scores.items() if v < threshold}
         if not failed_metrics:
             continue
 
-        # reference 데이터 가져오기
         ref_outputs = {}
         sample_id = ""
         if run.reference_example_id:
@@ -129,48 +131,26 @@ def fetch_errors(
         inputs = run.inputs or {}
         outputs = run.outputs or {}
 
-        row = {
-            "run_id": run_id[:8],
+        errors.append({
             "id": sample_id,
+            "run_id": run_id[:8],
+            "input": {
+                "subject": inputs.get("subject", ""),
+                "body": inputs.get("body", ""),
+                "sender_email": inputs.get("sender_email", ""),
+            },
             "failed_metrics": failed_metrics,
-            "subject": inputs.get("subject", ""),
-            "body": inputs.get("body", "")[:80],
-        }
-
-        # 실패한 메트릭별 ref vs pred 비교값 추가
-        for metric in failed_metrics:
-            field = _metric_to_field(metric)
-            if field:
-                row[f"ref_{field}"] = ref_outputs.get(field)
-                row[f"pred_{field}"] = outputs.get(field)
-
-        errors.append(row)
+            "fields": _build_field_pairs(ref_outputs, outputs),
+        })
 
     return errors
 
-
-def _metric_to_field(metric: str) -> str | None:
-    """메트릭 이름을 outputs 필드명으로 변환한다."""
-    return {
-        "intent_match": "intents",
-        "plan_match": "plan_actions",
-        "category_match": "classification",
-        "urgency_match": "classification",
-        "extract_match": "extract_data",
-        "outcome_match": "expected_outcome",
-    }.get(metric)
-
-
-# ──────────────────────────────────────────────
-# 3. 결과 출력
-# ──────────────────────────────────────────────
 
 def print_report(errors: list[dict], metrics: list[str]) -> None:
     print(f"\n{'='*65}")
     print(f"실패 케이스: 총 {len(errors)}건  (대상 메트릭: {', '.join(metrics)})")
     print(f"{'='*65}\n")
 
-    # 메트릭별 집계
     counter: dict[str, int] = defaultdict(int)
     for e in errors:
         for k in e["failed_metrics"]:
@@ -180,27 +160,26 @@ def print_report(errors: list[dict], metrics: list[str]) -> None:
         print(f"  {k:<20} {v}건")
     print()
 
-    # 케이스별 상세
     for i, e in enumerate(errors, 1):
         scores_str = ", ".join(f"{k}={v}" for k, v in e["failed_metrics"].items())
         print(f"[{i:>3}] {scores_str}")
         if e.get("id"):
             print(f"      id      : {e['id']}")
-        print(f"      subject : {e['subject']}")
-        print(f"      body    : {e['body']}")
-        for metric in e["failed_metrics"]:
-            field = _metric_to_field(metric)
-            if field:
-                print(f"      ref_{field:<12}: {e.get(f'ref_{field}')}")
-                print(f"      pred_{field:<11}: {e.get(f'pred_{field}')}")
+        inp = e["input"]
+        print(f"      subject : {inp.get('subject', '')}")
+        body = inp.get("body", "")
+        print(f"      body    : {body[:80]}{'...' if len(body) > 80 else ''}")
+        for field, pair in e["fields"].items():
+            print(f"      [{field}]")
+            print(f"        reference : {pair['reference']}")
+            print(f"        prediction: {pair['prediction']}")
         print()
 
 
-# ──────────────────────────────────────────────
-# 4. CLI 진입점
-# ──────────────────────────────────────────────
-
 def main() -> None:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
     parser = argparse.ArgumentParser(
         description="LangSmith 실험에서 메트릭 실패 케이스를 조회합니다."
     )
@@ -245,11 +224,9 @@ def main() -> None:
         threshold=args.threshold,
     )
 
-    # ── JSON 파일 저장 ──────────────────────────────
     save_path = _resolve_output_path(args.output, args.experiment, args.metrics)
     _save_json(errors, save_path)
 
-    # ── stdout 출력 ────────────────────────────────
     if args.json:
         print(json.dumps(errors, ensure_ascii=False, indent=2))
     else:
@@ -257,7 +234,6 @@ def main() -> None:
 
 
 def _resolve_output_path(output: str | None, experiment: str, metrics: list[str]) -> str:
-    """저장 경로를 결정한다. output이 None이면 자동 생성."""
     import os
     if output:
         return output
@@ -268,15 +244,14 @@ def _resolve_output_path(output: str | None, experiment: str, metrics: list[str]
 
 
 def _save_json(data: list[dict], path: str) -> None:
-    """data를 path에 JSON으로 저장한다."""
     import os
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
-    print(f"\n💾 결과 저장: {path}  ({len(data)}건)")
+    print(f"\n[저장] {path}  ({len(data)}건)")
 
 
 if __name__ == "__main__":
     # python -m app.evaluation.fetch_eval_errors --list
-    # python -m app.evaluation.fetch_eval_errors -e "attempt 1" -m intent_match 
+    # python -m app.evaluation.fetch_eval_errors -e attempt1 -m intent_match
     main()
