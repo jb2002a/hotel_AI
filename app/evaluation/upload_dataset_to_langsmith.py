@@ -1,31 +1,43 @@
 import json
-from langsmith import Client
+
 from dotenv import load_dotenv
+from langsmith import Client
+from langsmith.utils import LangSmithConflictError
 
 load_dotenv(override=True)
+
+DATASET_NAME = "hotel_ai_email_dataset"
+DATASET_DESCRIPTION = "호텔 AI 메일 데이터셋"
+JSONL_PATH = "resoruces/mail_dataset.jsonl"
+
 client = Client()
 
-dataset = client.create_dataset(
-    dataset_name="hotel_ai_email_dataset",
-    description="호텔 AI 메일 데이터셋"
-)
+try:
+    dataset = client.create_dataset(
+        dataset_name=DATASET_NAME,
+        description=DATASET_DESCRIPTION,
+    )
+except LangSmithConflictError:
+    dataset = client.read_dataset(dataset_name=DATASET_NAME)
+    old_ids = [ex.id for ex in client.list_examples(dataset_id=dataset.id)]
+    if old_ids:
+        client.delete_examples(old_ids)
+        print(f"기존 예제 {len(old_ids)}개 삭제")
 
 examples = []
-with open("resoruces/mail_dataset.jsonl", "r", encoding="utf-8") as f:
+with open(JSONL_PATH, "r", encoding="utf-8") as f:
     for line in f:
         record = json.loads(line.strip())
         examples.append({
-            "inputs": record["input"],       # subject, body, sender_email
-            "outputs": record["ground_truth"] # intent, classification, etc.
+            "inputs": record["input"],
+            "outputs": record["ground_truth"],
         })
 
-# 3. 배치로 업로드
 client.create_examples(
     inputs=[e["inputs"] for e in examples],
     outputs=[e["outputs"] for e in examples],
-    dataset_id=dataset.id
+    dataset_id=dataset.id,
 )
 
-
-#python -m app.evaluation.upload_dataset_to_langsmith
-print(f"✅ {len(examples)}개 예제 업로드 완료")
+# python -m app.evaluation.upload_dataset_to_langsmith
+print(f"✅ {len(examples)}개 예제 업로드 완료 (dataset: {DATASET_NAME})")
