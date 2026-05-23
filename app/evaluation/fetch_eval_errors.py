@@ -1,5 +1,7 @@
 """LangSmith 실험 조회 및 특정 메트릭 실패 케이스 추출 스크립트.
 
+AI에 주입하기 위해 전처리 데이터를 가져오는 스크립트입니다. 
+
 사용법:
     # 1) 실험 이름 목록 확인
     python -m app.evaluation.fetch_eval_errors --list

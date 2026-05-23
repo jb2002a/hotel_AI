@@ -1,0 +1,1507 @@
+[
+  {
+    "id": "sample_059",
+    "run_id": "019e5535",
+    "input": {
+      "subject": "회사 경비 처리용 영수증 긴급 발급 요청",
+      "body": "오늘까지 법인 카드 지출 증빙을 마감해야 합니다. 2026-05-15 체크아웃한 김철수 예약건의 인보이스를 1시간 내로 꼭 좀 메일로 보내주세요.",
+      "sender_email": "acc@example.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.5
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "policy_qna"
+        ],
+        "prediction": [
+          "policy_qna",
+          "booking_lookup"
+        ]
+      },
+      "classification": {
+        "reference": {
+          "urgency": "high",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "high"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": false,
+          "business_error_code": "HIGH_URGENCY"
+        },
+        "prediction": {
+          "business_error_code": "HIGH_URGENCY",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": "김철수",
+          "check_in": null,
+          "check_out": "2026-05-15"
+        },
+        "prediction": {
+          "check_in": null,
+          "check_out": "2026-05-15",
+          "name": "김철수"
+        }
+      },
+      "plan_actions": {
+        "reference": [
+          "vector_retrieve"
+        ],
+        "prediction": [
+          "db_retrieve",
+          "vector_retrieve"
+        ]
+      }
+    }
+  },
+  {
+    "id": "sample_089",
+    "run_id": "019e5535",
+    "input": {
+      "subject": "비아그라 정품 1+1 행사",
+      "body": "쀼아그라 정품 100% 보장. 최저가 판매 중입니다. 주소창에 www.viapill... 접속하세요.",
+      "sender_email": "med@spam.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.0
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "other"
+        ],
+        "prediction": []
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "spam"
+        },
+        "prediction": {
+          "category": "spam",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": false,
+          "business_error_code": "SPAM"
+        },
+        "prediction": {
+          "business_error_code": "SPAM",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": null,
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": null,
+          "check_out": null,
+          "name": null
+        }
+      },
+      "plan_actions": {
+        "reference": [],
+        "prediction": []
+      }
+    }
+  },
+  {
+    "id": "sample_046",
+    "run_id": "019e5535",
+    "input": {
+      "subject": "투자 리딩방 무료 체험기회",
+      "body": "급등주 픽 무료 공유! 코인 수익률 300% 보장. 카카오톡 오픈채팅방으로 들어오세요.",
+      "sender_email": "coin@spam.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.0
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "other"
+        ],
+        "prediction": []
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "spam"
+        },
+        "prediction": {
+          "category": "spam",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": false,
+          "business_error_code": "SPAM"
+        },
+        "prediction": {
+          "business_error_code": "SPAM",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": null,
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": null,
+          "check_out": null,
+          "name": null
+        }
+      },
+      "plan_actions": {
+        "reference": [],
+        "prediction": []
+      }
+    }
+  },
+  {
+    "id": "sample_100",
+    "run_id": "019e5535",
+    "input": {
+      "subject": "이미 취소한 예약인데 메일이 옵니다",
+      "body": "2025-08-15 일정으로 예약했던 이정재입니다. 저번 주에 취소했는데 왜 자꾸 안내 메일이 오죠? 확실히 삭제해주세요.",
+      "sender_email": "leejj@example.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.5
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "reservation_delete"
+        ],
+        "prediction": [
+          "reservation_delete",
+          "complaint_or_incident"
+        ]
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": false,
+          "business_error_code": "BOOKING_NOT_FOUND"
+        },
+        "prediction": {
+          "business_error_code": "BOOKING_NOT_FOUND",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": "이정재",
+          "check_in": "2025-08-15",
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": "2025-08-15",
+          "check_out": null,
+          "name": "이정재"
+        }
+      },
+      "plan_actions": {
+        "reference": [
+          "db_retrieve",
+          "reservation_delete"
+        ],
+        "prediction": [
+          "db_retrieve",
+          "reservation_delete"
+        ]
+      }
+    }
+  },
+  {
+    "id": "sample_039",
+    "run_id": "019e5535",
+    "input": {
+      "subject": "Re: 견적서 송부",
+      "body": "첨부된 파일(malware.exe)을 확인하시기 바랍니다. 비밀번호는 1234입니다.",
+      "sender_email": "hacker@spam.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.0
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "other"
+        ],
+        "prediction": [
+          "out_of_scope"
+        ]
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "spam"
+        },
+        "prediction": {
+          "category": "spam",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": false,
+          "business_error_code": "SPAM"
+        },
+        "prediction": {
+          "business_error_code": "SPAM",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": null,
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": null,
+          "check_out": null,
+          "name": null
+        }
+      },
+      "plan_actions": {
+        "reference": [],
+        "prediction": []
+      }
+    }
+  },
+  {
+    "id": "sample_095",
+    "run_id": "019e5535",
+    "input": {
+      "subject": "어쩌구 저쩌구",
+      "body": "방문 손잡이 창문 구름 커피",
+      "sender_email": "random@example.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.0
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "unclear"
+        ],
+        "prediction": [
+          "out_of_scope"
+        ]
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": true,
+          "business_error_code": null
+        },
+        "prediction": {
+          "business_error_code": null,
+          "should_succeed": true
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": null,
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": null,
+          "check_out": null,
+          "name": null
+        }
+      },
+      "plan_actions": {
+        "reference": [],
+        "prediction": []
+      }
+    }
+  },
+  {
+    "id": "sample_019",
+    "run_id": "019e5535",
+    "input": {
+      "subject": "qqqqqqqq",
+      "body": "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
+      "sender_email": "bot@spam.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.0
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "unclear"
+        ],
+        "prediction": []
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "spam"
+        },
+        "prediction": {
+          "category": "spam",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": false,
+          "business_error_code": "SPAM"
+        },
+        "prediction": {
+          "business_error_code": "SPAM",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": null,
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": null,
+          "check_out": null,
+          "name": null
+        }
+      },
+      "plan_actions": {
+        "reference": [],
+        "prediction": []
+      }
+    }
+  },
+  {
+    "id": "sample_102",
+    "run_id": "019e5535",
+    "input": {
+      "subject": "대한항공 수하물 분실",
+      "body": "공항에서 짐을 잃어버렸어요. 제 캐리어가 그쪽으로 갔을 수도 있는데 확인 좀 해주시겠어요?",
+      "sender_email": "airline@example.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.0
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "out_of_scope"
+        ],
+        "prediction": [
+          "complaint_or_incident"
+        ]
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": true,
+          "business_error_code": null
+        },
+        "prediction": {
+          "business_error_code": null,
+          "should_succeed": true
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": null,
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": null,
+          "check_out": null,
+          "name": null
+        }
+      },
+      "plan_actions": {
+        "reference": [],
+        "prediction": []
+      }
+    }
+  },
+  {
+    "id": "sample_042",
+    "run_id": "019e5534",
+    "input": {
+      "subject": "피자 배달 왔습니다",
+      "body": "배달의민족입니다. 로비에 도착했는데 손님이 전화를 안 받으시네요. 302호로 좀 올려보내주세요.",
+      "sender_email": "rider@example.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.0
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "out_of_scope"
+        ],
+        "prediction": [
+          "complaint_or_incident"
+        ]
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "high"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": true,
+          "business_error_code": null
+        },
+        "prediction": {
+          "business_error_code": "HIGH_URGENCY",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": null,
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": null,
+          "check_out": null,
+          "name": null
+        }
+      },
+      "plan_actions": {
+        "reference": [],
+        "prediction": []
+      }
+    }
+  },
+  {
+    "id": "sample_061",
+    "run_id": "019e5534",
+    "input": {
+      "subject": "과거 예약 취소 시도",
+      "body": "작년 2023년에 방문했던 송중기입니다. 그 당시 2023-12-25 예약을 이제 와서 환불하려고 하는데 취소 가능한가요?",
+      "sender_email": "songjg@example.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.5
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "reservation_delete"
+        ],
+        "prediction": [
+          "reservation_delete",
+          "policy_qna"
+        ]
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": false,
+          "business_error_code": "BOOKING_NOT_FOUND"
+        },
+        "prediction": {
+          "business_error_code": "BOOKING_NOT_FOUND",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": "송중기",
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": "2023-12-25",
+          "check_out": null,
+          "name": "송중기"
+        }
+      },
+      "plan_actions": {
+        "reference": [
+          "db_retrieve",
+          "reservation_delete"
+        ],
+        "prediction": [
+          "db_retrieve",
+          "vector_retrieve",
+          "reservation_delete"
+        ]
+      }
+    }
+  },
+  {
+    "id": "sample_027",
+    "run_id": "019e5534",
+    "input": {
+      "subject": "오류로 사라진 예약",
+      "body": "홈페이지에서 결제 중에 튕겼는데 제 통장에선 돈이 빠져나갔습니다. 2025-11-20 고소영 이름으로 예약이 생성 안 된 것 같은데 일정 변경 좀 해주세요.",
+      "sender_email": "kosy@example.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.5
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "reservation_update"
+        ],
+        "prediction": [
+          "reservation_update",
+          "complaint_or_incident"
+        ]
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": false,
+          "business_error_code": "BOOKING_NOT_FOUND"
+        },
+        "prediction": {
+          "business_error_code": "BUSINESS_ERROR",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": "고소영",
+          "check_in": "2025-11-20",
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": "2025-11-20",
+          "check_out": null,
+          "name": "고소영"
+        }
+      },
+      "plan_actions": {
+        "reference": [
+          "db_retrieve",
+          "reservation_update"
+        ],
+        "prediction": [
+          "db_retrieve",
+          "reservation_update"
+        ]
+      }
+    }
+  },
+  {
+    "id": "sample_034",
+    "run_id": "019e5534",
+    "input": {
+      "subject": "Hello there",
+      "body": "i want to... hmm... maybe tomorrow? 請問有房間嗎?",
+      "sender_email": "mix@example.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.0
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "unclear"
+        ],
+        "prediction": [
+          "reservation_create",
+          "policy_qna"
+        ]
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": true,
+          "business_error_code": null
+        },
+        "prediction": {
+          "business_error_code": "BUSINESS_ERROR",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": null,
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": "2023-10-06",
+          "check_out": null,
+          "name": null
+        }
+      },
+      "plan_actions": {
+        "reference": [],
+        "prediction": [
+          "vector_retrieve",
+          "retrieve_rest_rooms",
+          "reservation_create"
+        ]
+      }
+    }
+  },
+  {
+    "id": "sample_038",
+    "run_id": "019e5534",
+    "input": {
+      "subject": "축하합니다! 1억 당첨",
+      "body": "고객님께서는 글로벌 카지노 VIP로 선정되셨습니다. 지금 바로 아래 링크를 클릭하고 무료 가입 쿠폰을 받아가세요.",
+      "sender_email": "spam1@spam.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.0
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "other"
+        ],
+        "prediction": []
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "spam"
+        },
+        "prediction": {
+          "category": "spam",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": false,
+          "business_error_code": "SPAM"
+        },
+        "prediction": {
+          "business_error_code": "SPAM",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": null,
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": null,
+          "check_out": null,
+          "name": null
+        }
+      },
+      "plan_actions": {
+        "reference": [],
+        "prediction": []
+      }
+    }
+  },
+  {
+    "id": "sample_021",
+    "run_id": "019e5534",
+    "input": {
+      "subject": "객실에 회사 중요 서류(USB)를 두고 왔습니다!!",
+      "body": "어제 502호에서 체크아웃한 이대리입니다. 방 책상 위에 내일 발표할 회사 중요 보안 자료가 든 USB를 두고 왔는데, 급히 확인해서 보관 좀 부탁드립니다!!",
+      "sender_email": "lee.dr@example.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.0
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "policy_qna"
+        ],
+        "prediction": [
+          "complaint_or_incident"
+        ]
+      },
+      "classification": {
+        "reference": {
+          "urgency": "high",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "high"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": false,
+          "business_error_code": "HIGH_URGENCY"
+        },
+        "prediction": {
+          "business_error_code": "HIGH_URGENCY",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": "이대리",
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": null,
+          "check_out": "2023-10-02",
+          "name": "이대리"
+        }
+      },
+      "plan_actions": {
+        "reference": [
+          "vector_retrieve"
+        ],
+        "prediction": []
+      }
+    }
+  },
+  {
+    "id": "sample_057",
+    "run_id": "019e5534",
+    "input": {
+      "subject": "고층 배정 요청 및 일정 변경",
+      "body": "2025-11-20 체크인 예약자 은지원입니다. 체크인 날짜를 하루 미뤄주시고, 꼭 고층 객실로 배정 부탁드립니다.",
+      "sender_email": "jiwon@example.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.5
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "policy_qna",
+          "reservation_update"
+        ],
+        "prediction": [
+          "reservation_update"
+        ]
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": true,
+          "business_error_code": null
+        },
+        "prediction": {
+          "business_error_code": "BUSINESS_ERROR",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": "은지원",
+          "check_in": "2025-11-20",
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": "2025-11-20",
+          "check_out": null,
+          "name": "은지원"
+        }
+      },
+      "plan_actions": {
+        "reference": [
+          "vector_retrieve",
+          "db_retrieve",
+          "reservation_update"
+        ],
+        "prediction": [
+          "db_retrieve",
+          "reservation_update"
+        ]
+      }
+    }
+  },
+  {
+    "id": "sample_026",
+    "run_id": "019e5534",
+    "input": {
+      "subject": "빠른 대출 무보증 당일 승인",
+      "body": "신용불량자도 가능한 당일 대출 서비스. 김미영 팀장입니다. 언제든 전화주세요.",
+      "sender_email": "loan@spam.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.0
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "other"
+        ],
+        "prediction": []
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "spam"
+        },
+        "prediction": {
+          "category": "spam",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": false,
+          "business_error_code": "SPAM"
+        },
+        "prediction": {
+          "business_error_code": "SPAM",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": null,
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": null,
+          "check_out": null,
+          "name": "김미영"
+        }
+      },
+      "plan_actions": {
+        "reference": [],
+        "prediction": []
+      }
+    }
+  },
+  {
+    "id": "sample_062",
+    "run_id": "019e5534",
+    "input": {
+      "subject": "환경 보호에 동참해주세요",
+      "body": "최근 호텔 어메니티 일회용품 사용으로 인한 환경 오염이 심각합니다. 귀 호텔부터 플라스틱 제로에 앞장서주시길 촉구합니다.",
+      "sender_email": "ngo@example.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.0
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "out_of_scope"
+        ],
+        "prediction": [
+          "complaint_or_incident"
+        ]
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": true,
+          "business_error_code": null
+        },
+        "prediction": {
+          "business_error_code": null,
+          "should_succeed": true
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": null,
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": null,
+          "check_out": null,
+          "name": null
+        }
+      },
+      "plan_actions": {
+        "reference": [],
+        "prediction": []
+      }
+    }
+  },
+  {
+    "id": "sample_060",
+    "run_id": "019e5534",
+    "input": {
+      "subject": "내일 기업 워크샵 전체 취소 요청",
+      "body": "대표님 건강 문제로 내일 2026-05-19 예정된 50명 규모의 워크샵 단체 숙박을 전면 취소해야 할 것 같습니다. 위약금 규정과 긴급 취소 절차를 당장 알려주십시오.",
+      "sender_email": "hr.team@example.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.5
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "reservation_delete"
+        ],
+        "prediction": [
+          "reservation_delete",
+          "policy_qna"
+        ]
+      },
+      "classification": {
+        "reference": {
+          "urgency": "high",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "high"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": false,
+          "business_error_code": "HIGH_URGENCY"
+        },
+        "prediction": {
+          "business_error_code": "HIGH_URGENCY",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": null,
+          "check_in": "2026-05-19",
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": "2026-05-19",
+          "check_out": null,
+          "name": null
+        }
+      },
+      "plan_actions": {
+        "reference": [
+          "db_retrieve",
+          "reservation_delete"
+        ],
+        "prediction": [
+          "db_retrieve",
+          "vector_retrieve",
+          "reservation_delete"
+        ]
+      }
+    }
+  },
+  {
+    "id": "sample_065",
+    "run_id": "019e5533",
+    "input": {
+      "subject": "예약 내역 상세 요청",
+      "body": "박민수 입니다. 제 예약 내역에 조식이 포함되어 있는지 확인해주세요.",
+      "sender_email": "parkms@example.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.5
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "booking_lookup"
+        ],
+        "prediction": [
+          "booking_lookup",
+          "policy_qna"
+        ]
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": true,
+          "business_error_code": null
+        },
+        "prediction": {
+          "business_error_code": null,
+          "should_succeed": true
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": "박민수",
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": null,
+          "check_out": null,
+          "name": "박민수"
+        }
+      },
+      "plan_actions": {
+        "reference": [
+          "db_retrieve"
+        ],
+        "prediction": [
+          "db_retrieve",
+          "vector_retrieve"
+        ]
+      }
+    }
+  },
+  {
+    "id": "sample_092",
+    "run_id": "019e5533",
+    "input": {
+      "subject": "계약서 긴급 팩스 송수신 및 출력 요청",
+      "body": "1시간 뒤에 중요한 법인 계약 체결이 있습니다. 비즈니스 센터에서 계약서 100장 출력과 해외 팩스 발송이 당장 가능한지 긴급히 회신 바랍니다.",
+      "sender_email": "legal@example.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.0
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "policy_qna"
+        ],
+        "prediction": []
+      },
+      "classification": {
+        "reference": {
+          "urgency": "high",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "high"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": false,
+          "business_error_code": "HIGH_URGENCY"
+        },
+        "prediction": {
+          "business_error_code": "HIGH_URGENCY",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": null,
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": null,
+          "check_out": null,
+          "name": null
+        }
+      },
+      "plan_actions": {
+        "reference": [
+          "vector_retrieve"
+        ],
+        "prediction": []
+      }
+    }
+  },
+  {
+    "id": "sample_006",
+    "run_id": "019e5533",
+    "input": {
+      "subject": "호텔 마케팅 SEO 최적화 제안",
+      "body": "대표님, 귀사의 호텔 웹사이트 검색 노출을 상위 1%로 올려드립니다. 첫 달 무료 이벤트!",
+      "sender_email": "seo@spam.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.0
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "other"
+        ],
+        "prediction": [
+          "out_of_scope"
+        ]
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "spam"
+        },
+        "prediction": {
+          "category": "spam",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": false,
+          "business_error_code": "SPAM"
+        },
+        "prediction": {
+          "business_error_code": "SPAM",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": null,
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": null,
+          "check_out": null,
+          "name": null
+        }
+      },
+      "plan_actions": {
+        "reference": [],
+        "prediction": []
+      }
+    }
+  },
+  {
+    "id": "sample_058",
+    "run_id": "019e5533",
+    "input": {
+      "subject": "오늘 오후 VIP 바이어 긴급 미팅건",
+      "body": "갑자기 오늘 오후 3시에 해외 바이어 미팅이 잡혔습니다. 급하게 프라이빗한 회의실 대관이 가능한지 지금 바로 확인 부탁드립니다.",
+      "sender_email": "biz1@example.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.0
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "policy_qna"
+        ],
+        "prediction": [
+          "reservation_create"
+        ]
+      },
+      "classification": {
+        "reference": {
+          "urgency": "high",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "high"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": false,
+          "business_error_code": "HIGH_URGENCY"
+        },
+        "prediction": {
+          "business_error_code": "HIGH_URGENCY",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": null,
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": "2023-10-04",
+          "check_out": null,
+          "name": null
+        }
+      },
+      "plan_actions": {
+        "reference": [
+          "vector_retrieve"
+        ],
+        "prediction": [
+          "retrieve_rest_rooms",
+          "reservation_create"
+        ]
+      }
+    }
+  },
+  {
+    "id": "sample_076",
+    "run_id": "019e5533",
+    "input": {
+      "subject": "특가 세일 가전제품",
+      "body": "공장 직거래 에어컨, 냉장고 반값 세일합니다. 한정수량 마감 임박!",
+      "sender_email": "sales@spam.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.0
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "other"
+        ],
+        "prediction": []
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "spam"
+        },
+        "prediction": {
+          "category": "spam",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": false,
+          "business_error_code": "SPAM"
+        },
+        "prediction": {
+          "business_error_code": "SPAM",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": null,
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": null,
+          "check_out": null,
+          "name": null
+        }
+      },
+      "plan_actions": {
+        "reference": [],
+        "prediction": []
+      }
+    }
+  },
+  {
+    "id": "sample_093",
+    "run_id": "019e5533",
+    "input": {
+      "subject": "예약이 안 보인다고 하네요",
+      "body": "2025-06-05에 장동건 이름으로 예약한 것을 변경하려고 하는데, 시스템에서 없다고 나오네요. 확인 바랍니다.",
+      "sender_email": "jang@example.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.5
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "reservation_update"
+        ],
+        "prediction": [
+          "reservation_update",
+          "booking_lookup"
+        ]
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": false,
+          "business_error_code": "BOOKING_NOT_FOUND"
+        },
+        "prediction": {
+          "business_error_code": "BUSINESS_ERROR",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": "장동건",
+          "check_in": "2025-06-05",
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": "2025-06-05",
+          "check_out": null,
+          "name": "장동건"
+        }
+      },
+      "plan_actions": {
+        "reference": [
+          "db_retrieve",
+          "reservation_update"
+        ],
+        "prediction": [
+          "db_retrieve",
+          "reservation_update"
+        ]
+      }
+    }
+  },
+  {
+    "id": "sample_094",
+    "run_id": "019e5533",
+    "input": {
+      "subject": "ㅎㅇ",
+      "body": "ㅇㅇㅇㅇㅇㅇ",
+      "sender_email": "test1@example.com"
+    },
+    "failed_metrics": {
+      "intent_match": 0.0
+    },
+    "fields": {
+      "intents": {
+        "reference": [
+          "unclear"
+        ],
+        "prediction": []
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": true,
+          "business_error_code": null
+        },
+        "prediction": {
+          "business_error_code": null,
+          "should_succeed": true
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": null,
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": null,
+          "check_out": null,
+          "name": null
+        }
+      },
+      "plan_actions": {
+        "reference": [],
+        "prediction": []
+      }
+    }
+  }
+]
