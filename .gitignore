@@ -69,3 +69,4 @@ rules/global-baseline.mdc
 .cursor/rules/commit-message-ko.mdc
 
 
+chroma_db/chroma.sqlite3
