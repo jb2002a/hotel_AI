@@ -4,8 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv(override=True)
 
-from app.evaluation.run_em_eval import run_evaluation
-from app.evaluation.upload_dataset_to_langsmith import upload_dataset
+from app.evaluation.langsmith_eval import run_evaluation, upload_dataset
 
 
 def run_pipeline() -> None:

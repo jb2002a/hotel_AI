@@ -46,5 +46,5 @@ def upload_dataset() -> int:
 
 
 if __name__ == "__main__":
-    # python -m app.evaluation.upload_dataset_to_langsmith
+    # python -m app.evaluation.langsmith_eval.upload_dataset_to_langsmith
     upload_dataset()

@@ -85,5 +85,5 @@ def run_evaluation() -> None:
 
 
 if __name__ == "__main__":
-    # python -m app.evaluation.run_em_eval
+    # python -m app.evaluation.langsmith_eval.run_em_eval
     run_evaluation()
