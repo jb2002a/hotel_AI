@@ -9,7 +9,7 @@ AI에 주입하기 위해 전처리 데이터를 가져오는 스크립트입니
     # 2) 특정 메트릭 실패 케이스 조회
     python -m app.evaluation.fetch_eval_errors \
         --experiment "attempt 1" \
-        --metrics intent_match plan_match \
+        --metrics action_match error_code_match \
         --threshold 1.0
 """
 
@@ -28,21 +28,20 @@ client = Client()
 
 DATASET_NAME = "hotel_ai_email_dataset"
 ALL_METRICS = [
-    "intent_match",
+    "action_match",
     "category_match",
     "urgency_match",
-    "plan_match",
+    "error_code_match",
     "extract_match",
-    "outcome_match",
 ]
 
 # run_em_eval target / dataset outputs와 동일한 필드
 OUTPUT_FIELDS = [
-    "intents",
+    "actions",
+    "policy_queries",
     "classification",
     "expected_outcome",
     "extract_data",
-    "plan_actions",
 ]
 
 
@@ -194,9 +193,9 @@ def main() -> None:
         help="조회할 실험 이름",
     )
     parser.add_argument(
-        "--metrics", "-m", nargs="+", default=["intent_match"],
+        "--metrics", "-m", nargs="+", default=["action_match"],
         choices=ALL_METRICS,
-        help=f"확인할 메트릭 (기본: intent_match). 선택지: {ALL_METRICS}",
+        help=f"확인할 메트릭 (기본: action_match). 선택지: {ALL_METRICS}",
     )
     parser.add_argument(
         "--threshold", "-t", type=float, default=1.0,
@@ -255,5 +254,5 @@ def _save_json(data: list[dict], path: str) -> None:
 
 if __name__ == "__main__":
     # python -m app.evaluation.fetch_eval_errors --list
-    # python -m app.evaluation.fetch_eval_errors -e attempt1 -m intent_match
+    # python -m app.evaluation.fetch_eval_errors -e attempt1 -m action_match
     main()

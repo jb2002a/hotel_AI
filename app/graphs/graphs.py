@@ -4,7 +4,7 @@
 ------
 START
   → email_ingest
-  → intent_classifier     분류 + intent → actions 고정 매핑
+  → intent_classifier     분류 + actions·policy_queries 추출
   → prepare               actions 기반 retrieve 병렬 + 예약 SQL 생성
   → reply_draft           답변 초안 (business_error 시 no-op)
   → manager_approval      interrupt/UI용 payload (+ interrupt, UI)
@@ -92,6 +92,7 @@ def _default_initial_state() -> dict:
         "extract_data": None,
         "classification": None,
         "actions": None,
+        "policy_queries": None,
         "vector_retrieve_results": None,
         "db_retrieve_results": None,
         "rest_room_retrieve_results": None,

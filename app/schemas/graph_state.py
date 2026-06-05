@@ -1,5 +1,5 @@
 # V1 플로우
-# email_ingest -> intent_classifier(actions 고정) -> prepare(retrieve + sql) -> reply_draft -> manager_approval -> END
+# email_ingest -> intent_classifier(actions + policy_queries) -> prepare(retrieve + sql) -> reply_draft -> manager_approval -> END
 
 from typing import Any, Literal, TypedDict
 
@@ -13,25 +13,15 @@ class EmailData(TypedDict):
     sender_email: str
 
 
-# intent 분류 결과
+# 이메일 분류 결과 (LLM이 actions·policy_queries 직접 출력)
 class EmailClassification(TypedDict):
-    intents: list[
-        Literal[
-            "policy_qna",
-            "booking_lookup",
-            "reservation_create",
-            "reservation_update",
-            "reservation_delete",
-            "complaint_or_incident",
-            "out_of_scope",
-            "unclear",
-        ]
-    ]
+    actions: list["GraphActionLiteral"]
+    policy_queries: list[str] | None
     category: Literal["normal", "spam"]
     urgency: Literal["normal", "high"]
 
 
-# 액션 리터럴
+# 그래프 실행 액션 리터럴
 GraphActionLiteral = Literal[
     "vector_retrieve",
     "db_retrieve",
@@ -40,18 +30,6 @@ GraphActionLiteral = Literal[
     "reservation_update",
     "reservation_delete",
 ]
-
-# EmailClassification.intents Literal과 1:1 대응
-INTENT_ACTION_MAP: dict[str, list[GraphActionLiteral]] = {
-    "policy_qna": ["vector_retrieve"],
-    "booking_lookup": ["db_retrieve"],
-    "reservation_create": ["retrieve_rest_rooms", "reservation_create"],
-    "reservation_update": ["db_retrieve", "reservation_update"],
-    "reservation_delete": ["db_retrieve", "reservation_delete"],
-    "complaint_or_incident": [],
-    "out_of_scope": [],
-    "unclear": [],
-}
 
 
 class ActionSQLite(TypedDict):
@@ -82,8 +60,11 @@ class EmailAgentState(TypedDict):
     # 이메일 분류 결과
     classification: EmailClassification | None
 
-    # intent 기반 고정 액션 목록 (intent_classifier_node에서 설정)
+    # 실행 액션 목록 (intent_classifier_node에서 설정, policy_queries 시 vector_retrieve 포함)
     actions: list[GraphActionLiteral] | None
+
+    # 정책 RAG 검색용 쿼리 (intent_classifier_node에서 설정)
+    policy_queries: list[str] | None
 
     # 벡터 스토어 검색 결과
     vector_retrieve_results: list[Document] | None
@@ -113,6 +94,7 @@ def build_approval_payload(state: EmailAgentState) -> dict[str, Any]:
         "email_data": state.get("email_data"),
         "extract_data": state.get("extract_data"),
         "actions": state.get("actions"),
+        "policy_queries": state.get("policy_queries"),
         "db_retrieve_results": state.get("db_retrieve_results"),
         "rest_room_retrieve_results": state.get("rest_room_retrieve_results"),
         "action_sqlite": state.get("action_sqlite"),

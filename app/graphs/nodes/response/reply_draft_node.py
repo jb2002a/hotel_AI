@@ -34,8 +34,12 @@ def reply_draft_node(state: EmailAgentState) -> dict:
 
     email_subject = email_data["email_subject"]
     email_content = email_data["email_content"]
-    intents = classification.get("intents", []) if classification else []
-    intents_block = ", ".join(intents) if intents else "(없음)"
+    actions = state.get("actions") or []
+    policy_queries = state.get("policy_queries") or []
+    actions_block = ", ".join(actions) if actions else "(없음)"
+    policy_queries_block = (
+        "; ".join(policy_queries) if policy_queries else "(없음)"
+    )
 
     draft_prompt = f"""
     당신은 {_tem_hotel_name}의 매니저 {_tem_manager_name}입니다.
@@ -46,8 +50,11 @@ def reply_draft_node(state: EmailAgentState) -> dict:
     제목: {email_subject}
     본문: {email_content}
 
-    [분류된 고객 의도]
-    {intents_block}
+    [실행 액션]
+    {actions_block}
+
+    [정책 조회 질문]
+    {policy_queries_block}
 
     [참고 가능한 근거]
     {search_results}

@@ -10,8 +10,12 @@ from app.services.vector_store_service import get_vector_store_from_chroma
 
 @traceable(name="policy_retrieve")
 def policy_retrieve(state: EmailAgentState) -> dict:
-    email_data = state["email_data"]    
-    query = f"{email_data['email_subject']}\n{email_data['email_content']}"
+    email_data = state["email_data"]
+    policy_queries = state.get("policy_queries") or []
+    if policy_queries:
+        query = "\n".join(policy_queries)
+    else:
+        query = f"{email_data['email_subject']}\n{email_data['email_content']}"
     try:
         vector_store = get_vector_store_from_chroma()
         search_results = vector_store.similarity_search(query, k=3)

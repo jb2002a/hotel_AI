@@ -9,10 +9,19 @@ from langsmith import evaluate
 compiled = graph.compile()
 
 
-def _extract_for_eval(data: dict | None) -> dict | None:
-    if data is None:
-        return None
-    return {"check_in": data.get("check_in"), "check_out": data.get("check_out")}
+def _actions_for_eval(data: dict) -> set[str]:
+    """런타임이 policy_queries 시 붙이는 vector_retrieve는 제외하고 비교."""
+    return {a for a in (data.get("actions") or []) if a != "vector_retrieve"}
+
+
+def _normalize_extract(data: dict | None) -> dict:
+    if not data:
+        return {"name": None, "check_in": None, "check_out": None}
+    return {
+        "name": data.get("name"),
+        "check_in": data.get("check_in"),
+        "check_out": data.get("check_out"),
+    }
 
 
 def target(inputs: dict) -> dict:
@@ -27,10 +36,10 @@ def target(inputs: dict) -> dict:
     )
     clf = state.get("classification") or {}
     business_error = state.get("business_error")
-    intents: list = clf.get("intents") or []
 
     return {
-        "intents": intents,
+        "actions": list(state.get("actions") or []),
+        "policy_queries": list(state.get("policy_queries") or []),
         "classification": {
             "category": clf.get("category"),
             "urgency": clf.get("urgency"),
@@ -40,7 +49,6 @@ def target(inputs: dict) -> dict:
             "business_error_code": (business_error or {}).get("code"),
         },
         "extract_data": state.get("extract_data"),
-        "plan_actions": list(state.get("actions") or []),
     }
 
 
@@ -49,27 +57,24 @@ def eval_em(outputs: dict, reference_outputs: dict) -> list[dict]:
     clf_r = reference_outputs.get("classification") or {}
     out_p = outputs.get("expected_outcome") or {}
     out_r = reference_outputs.get("expected_outcome") or {}
-    pred_intents = outputs.get("intents") or []
-    ref_intents = reference_outputs.get("intents") or []
-    pred_set = set(pred_intents)
-    ref_set = set(ref_intents)
-    intent_score = 0.0
-    if pred_set or ref_set:
-        intent_score = len(pred_set & ref_set) / len(pred_set | ref_set)
+
+    action_score = int(_actions_for_eval(outputs) == _actions_for_eval(reference_outputs))
+    extract_score = int(
+        _normalize_extract(outputs.get("extract_data"))
+        == _normalize_extract(reference_outputs.get("extract_data"))
+    )
+
     return [
-        {"key": "intent_match",   "score": intent_score},
+        {"key": "action_match", "score": action_score},
         {"key": "category_match", "score": int(clf_p.get("category") == clf_r.get("category"))},
-        {"key": "urgency_match",  "score": int(clf_p.get("urgency")  == clf_r.get("urgency"))},
-        {"key": "plan_match",     "score": int(set(outputs.get("plan_actions") or []) == set(reference_outputs.get("plan_actions") or []))},
+        {"key": "urgency_match", "score": int(clf_p.get("urgency") == clf_r.get("urgency"))},
         {
-            "key": "extract_match",
-            "score": int(
-                _extract_for_eval(outputs.get("extract_data"))
-                == _extract_for_eval(reference_outputs.get("extract_data"))
-            ),
+            "key": "error_code_match",
+            "score": int(out_p.get("business_error_code") == out_r.get("business_error_code")),
         },
-        {"key": "outcome_match",  "score": int(out_p.get("should_succeed") == out_r.get("should_succeed"))},
+        {"key": "extract_match", "score": extract_score},
     ]
+
 
 def run_evaluation() -> None:
     """LangSmith 데이터셋으로 EM 평가를 실행한다."""
