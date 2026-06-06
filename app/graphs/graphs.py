@@ -4,7 +4,7 @@
 ------
 START
   → email_ingest
-  → intent_classifier     분류 + actions·policy_queries 추출
+  → email_classification  분류 + actions·policy_queries 추출
   → prepare               actions 기반 retrieve 병렬 + 예약 SQL 생성
   → reply_draft           답변 초안 (business_error 시 no-op)
   → manager_approval      interrupt/UI용 payload (+ interrupt, UI)
@@ -19,7 +19,7 @@ from langgraph.types import Command
 
 from app.errors import BusinessError
 from app.graphs.nodes.control import manager_approval_node
-from app.graphs.nodes.intake import email_ingest, intent_classifier_node
+from app.graphs.nodes.intake import email_classification, email_ingest
 from app.graphs.nodes.prepare import prepare_node
 from app.graphs.nodes.response import reply_draft_node
 from app.schemas.graph_state import EmailAgentState, build_approval_payload
@@ -53,7 +53,7 @@ graph = StateGraph(EmailAgentState)
 
 # Intake
 graph.add_node("email_ingest_node", _guard_business_error(email_ingest))
-graph.add_node("intent_classifier_node", _guard_business_error(intent_classifier_node))
+graph.add_node("email_classification_node", _guard_business_error(email_classification))
 
 # Prepare (retrieve + SQL은 prepare_node 내부에서 actions 기준 실행)
 graph.add_node("prepare_node", _guard_business_error(prepare_node))
@@ -69,9 +69,9 @@ graph.add_node("manager_approval_node", manager_approval_node)
 # ---------------------------------------------------------------------------
 
 graph.add_edge(START, "email_ingest_node")
-graph.add_edge("email_ingest_node", "intent_classifier_node")
+graph.add_edge("email_ingest_node", "email_classification_node")
 
-graph.add_edge("intent_classifier_node", "prepare_node")
+graph.add_edge("email_classification_node", "prepare_node")
 graph.add_edge("prepare_node", "reply_draft_node")
 graph.add_edge("reply_draft_node", "manager_approval_node")
 

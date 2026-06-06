@@ -13,13 +13,25 @@ from app.graphs.nodes.retrieval import (
 
 _RETRIEVE_FNS: list[tuple[str, Callable[[EmailAgentState], dict]]] = [
     ("vector_retrieve", policy_retrieve),
-    ("db_retrieve", member_booking_retrieve),
-    ("retrieve_rest_rooms", vacancy_retrieve),
+    ("reservation_search", member_booking_retrieve),
+    ("_vacancy_check", vacancy_retrieve),
 ]
+
+# 액션 실행 전 자동으로 선행 조회가 필요한 매핑
+_AUTO_PREREQS: dict[str, str] = {
+    "reservation_create": "_vacancy_check",
+    "reservation_update": "reservation_search",
+    "reservation_delete": "reservation_search",
+}
 
 
 def _run_retrieves(state: EmailAgentState, actions: set[str]) -> dict:
-    tasks = [fn for action, fn in _RETRIEVE_FNS if action in actions]
+    retrieve_actions = set(actions)
+    for action, prereq in _AUTO_PREREQS.items():
+        if action in actions:
+            retrieve_actions.add(prereq)
+
+    tasks = [fn for action, fn in _RETRIEVE_FNS if action in retrieve_actions]
     if not tasks:
         return {}
 
