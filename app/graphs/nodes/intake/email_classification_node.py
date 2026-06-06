@@ -4,17 +4,17 @@ from langgraph.types import Command
 from langsmith import traceable
 
 from app.config.config import LLM
-from app.schemas.graph_state import EmailAgentState, EmailClassification, GraphActionLiteral
+from app.schemas.graph_state import EmailAgentState, EmailClassification
 
 
-def _dedupe_actions(actions: list[str]) -> list[GraphActionLiteral]:
-    result: list[GraphActionLiteral] = []
+def _dedupe_actions(actions: list[str]) -> list[str]:
+    result: list[str] = []
     seen: set[str] = set()
     for action in actions:
         if action in seen:
             continue
         seen.add(action)
-        result.append(action)  # type: ignore[arg-type]
+        result.append(action)
     return result
 
 

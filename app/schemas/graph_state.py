@@ -15,19 +15,10 @@ class EmailData(TypedDict):
 
 # 이메일 분류 결과 (LLM이 actions·policy_queries 직접 출력)
 class EmailClassification(TypedDict):
-    actions: list["GraphActionLiteral"]
+    actions: list[str]
     policy_queries: list[str] | None
     category: Literal["normal", "spam"]
     urgency: Literal["normal", "high"]
-
-
-# 그래프 실행 액션 리터럴
-GraphActionLiteral = Literal[
-    "reservation_search",
-    "reservation_create",
-    "reservation_update",
-    "reservation_delete",
-]
 
 
 class ActionSQLite(TypedDict):
@@ -59,7 +50,7 @@ class EmailAgentState(TypedDict):
     classification: EmailClassification | None
 
     # 실행 액션 목록 (email_classification_node에서 설정)
-    actions: list[GraphActionLiteral] | None
+    actions: list[str] | None
 
     # 정책 RAG 검색용 쿼리 (email_classification_node에서 설정)
     policy_queries: list[str] | None
