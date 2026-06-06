@@ -4,34 +4,50 @@ from concurrent.futures import ThreadPoolExecutor
 from langsmith import traceable
 
 from app.schemas.graph_state import EmailAgentState
-from app.graphs.nodes.prepare.reservation_sql import build_action_sqlite
 from app.graphs.nodes.retrieval import (
     member_booking_retrieve,
     policy_retrieve,
     vacancy_retrieve,
 )
 
-_RETRIEVE_FNS: list[tuple[str, Callable[[EmailAgentState], dict]]] = [
-    ("vector_retrieve", policy_retrieve),
-    ("reservation_search", member_booking_retrieve),
-    ("_vacancy_check", vacancy_retrieve),
-]
-
-# 액션 실행 전 자동으로 선행 조회가 필요한 매핑
-_AUTO_PREREQS: dict[str, str] = {
-    "reservation_create": "_vacancy_check",
-    "reservation_update": "reservation_search",
-    "reservation_delete": "reservation_search",
+_ACTION_RETRIEVERS: dict[str, Callable[[EmailAgentState], dict]] = {
+    "reservation_search": member_booking_retrieve,
+    "reservation_create": vacancy_retrieve,
+    "reservation_update": member_booking_retrieve,
+    "reservation_delete": member_booking_retrieve,
 }
 
 
-def _run_retrieves(state: EmailAgentState, actions: set[str]) -> dict:
-    retrieve_actions = set(actions)
-    for action, prereq in _AUTO_PREREQS.items():
-        if action in actions:
-            retrieve_actions.add(prereq)
+def _collect_retrievers(
+    state: EmailAgentState,
+    actions: set[str],
+) -> list[Callable[[EmailAgentState], dict]]:
+    seen: set[Callable[[EmailAgentState], dict]] = set()
+    fns: list[Callable[[EmailAgentState], dict]] = []
 
-    tasks = [fn for action, fn in _RETRIEVE_FNS if action in retrieve_actions]
+    if state.get("policy_queries"):
+        seen.add(policy_retrieve)
+        fns.append(policy_retrieve)
+
+    for action in actions:
+        fn = _ACTION_RETRIEVERS.get(action)
+        if fn and fn not in seen:
+            seen.add(fn)
+            fns.append(fn)
+    return fns
+
+
+@traceable(name="prepare_node")
+def prepare_node(state: EmailAgentState) -> dict:
+    """actions에 따라 필요한 retriever를 병렬 실행"""
+
+    if state.get("business_error"):
+        return {}
+
+    actions_raw = state.get("actions")
+    actions = set(actions_raw) if isinstance(actions_raw, list) else set()
+
+    tasks = _collect_retrievers(state, actions)
     if not tasks:
         return {}
 
@@ -44,28 +60,3 @@ def _run_retrieves(state: EmailAgentState, actions: set[str]) -> dict:
         for future in futures:
             merged.update(future.result())
     return merged
-
-
-@traceable(name="prepare_node")
-def prepare_node(state: EmailAgentState) -> dict:
-    """actions에 따라 벡터/DB 검색 및 SQL 생성 노드"""
-
-    if state.get("business_error"):
-        return {}
-
-    actions_raw = state.get("actions")
-    actions_list = actions_raw if isinstance(actions_raw, list) else []
-    actions = set(actions_list)
-
-    # 벡터/DB 검색
-    retrieve_results = _run_retrieves(state, actions)
-    result = dict(retrieve_results)
-
-    effective_state: EmailAgentState = {**state, **retrieve_results}
-    
-    # SQL 생성
-    sql_result = build_action_sqlite(effective_state, actions)
-    if sql_result:
-        result.update(sql_result)
-
-    return result

@@ -10,8 +10,7 @@ compiled = graph.compile()
 
 
 def _actions_for_eval(data: dict) -> set[str]:
-    """런타임이 policy_queries 시 붙이는 vector_retrieve는 제외하고 비교."""
-    return {a for a in (data.get("actions") or []) if a != "vector_retrieve"}
+    return set(data.get("actions") or [])
 
 
 def _normalize_extract(data: dict | None) -> dict:

@@ -1,5 +1,5 @@
 # V1 플로우
-# email_ingest -> email_classification(actions + policy_queries) -> prepare(retrieve + sql) -> reply_draft -> manager_approval -> END
+# email_ingest -> email_classification(actions + policy_queries) -> prepare(retrieve) -> sql_build -> reply_draft -> manager_approval -> END
 
 from typing import Any, Literal, TypedDict
 
@@ -23,8 +23,7 @@ class EmailClassification(TypedDict):
 
 # 그래프 실행 액션 리터럴
 GraphActionLiteral = Literal[
-    "vector_retrieve",       # 내부 자동 추가 (policy_queries 존재 시)
-    "reservation_search",    # 예약/회원 DB 조회 (구 db_retrieve)
+    "reservation_search",
     "reservation_create",
     "reservation_update",
     "reservation_delete",
@@ -59,7 +58,7 @@ class EmailAgentState(TypedDict):
     # 이메일 분류 결과
     classification: EmailClassification | None
 
-    # 실행 액션 목록 (email_classification_node에서 설정, policy_queries 시 vector_retrieve 포함)
+    # 실행 액션 목록 (email_classification_node에서 설정)
     actions: list[GraphActionLiteral] | None
 
     # 정책 RAG 검색용 쿼리 (email_classification_node에서 설정)
