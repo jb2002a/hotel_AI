@@ -23,6 +23,10 @@ def _normalize_extract(data: dict | None) -> dict:
     }
 
 
+def _has_policy_queries(data: dict) -> bool:
+    return bool(data.get("policy_queries"))
+
+
 def target(inputs: dict) -> dict:
     state = compiled.invoke(
         {
@@ -62,15 +66,23 @@ def eval_em(outputs: dict, reference_outputs: dict) -> list[dict]:
         _normalize_extract(outputs.get("extract_data"))
         == _normalize_extract(reference_outputs.get("extract_data"))
     )
+    classification_score = (
+        0.5 * int(clf_p.get("category") == clf_r.get("category"))
+        + 0.5 * int(clf_p.get("urgency") == clf_r.get("urgency"))
+    )
+    outcome_score = (
+        0.5 * int(out_p.get("should_succeed") == out_r.get("should_succeed"))
+        + 0.5 * int(out_p.get("business_error_code") == out_r.get("business_error_code"))
+    )
+    policy_queries_presence_score = int(
+        _has_policy_queries(outputs) == _has_policy_queries(reference_outputs)
+    )
 
     return [
         {"key": "action_match", "score": action_score},
-        {"key": "category_match", "score": int(clf_p.get("category") == clf_r.get("category"))},
-        {"key": "urgency_match", "score": int(clf_p.get("urgency") == clf_r.get("urgency"))},
-        {
-            "key": "error_code_match",
-            "score": int(out_p.get("business_error_code") == out_r.get("business_error_code")),
-        },
+        {"key": "classification_match", "score": classification_score},
+        {"key": "outcome_match", "score": outcome_score},
+        {"key": "policy_queries_presence_match", "score": policy_queries_presence_score},
         {"key": "extract_match", "score": extract_score},
     ]
 

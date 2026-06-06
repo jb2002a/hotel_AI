@@ -9,7 +9,7 @@ AI에 주입하기 위해 전처리 데이터를 가져오는 스크립트입니
     # 2) 특정 메트릭 실패 케이스 조회
     python -m app.evaluation.fetch_eval_errors \
         --experiment "attempt 1" \
-        --metrics action_match error_code_match \
+        --metrics action_match outcome_match \
         --threshold 1.0
 """
 
@@ -29,9 +29,9 @@ client = Client()
 DATASET_NAME = "hotel_ai_email_dataset"
 ALL_METRICS = [
     "action_match",
-    "category_match",
-    "urgency_match",
-    "error_code_match",
+    "classification_match",
+    "outcome_match",
+    "policy_queries_presence_match",
     "extract_match",
 ]
 
