@@ -2,11 +2,7 @@ from app.errors import BusinessError
 from app.schemas.graph_state import ActionSQLite, EmailAgentState
 
 
-def _require_fields(
-    state: EmailAgentState,
-    *,
-    require_dates: bool = False,
-) -> tuple[str, str | None, str | None]:
+def _require_email(state: EmailAgentState) -> str:
     email_data = state.get("email_data")
     if not email_data:
         raise BusinessError("state.email_data가 없습니다.")
@@ -14,24 +10,28 @@ def _require_fields(
     email = email_data.get("sender_email")
     if not email:
         raise BusinessError("sender_email이 없습니다.")
-
-    check_in: str | None = None
-    check_out: str | None = None
-    if require_dates:
-        extract_data = state.get("extract_data")
-        if not extract_data:
-            raise BusinessError("state.extract_data가 없습니다.")
-        check_in = extract_data.get("check_in")
-        check_out = extract_data.get("check_out")
-        if not check_in:
-            raise BusinessError("check_in이 없습니다.")
-        if not check_out:
-            raise BusinessError("check_out이 없습니다.")
-
-    return email, check_in, check_out
+    return email
 
 
-def _assert_booking_modify_context(state: EmailAgentState) -> None:
+def _require_create_dates(state: EmailAgentState) -> tuple[str, str]:
+    extract_data = state.get("extract_data")
+    if not extract_data:
+        raise BusinessError(
+            "state.extract_data가 없습니다.",
+            code="BOOKING_CONTEXT_REQUIRED",
+        )
+
+    check_in = extract_data.get("check_in")
+    check_out = extract_data.get("check_out")
+    if not check_in or not check_out:
+        raise BusinessError(
+            "신규 예약에는 check_in과 check_out이 모두 필요합니다.",
+            code="BOOKING_CONTEXT_REQUIRED",
+        )
+    return check_in, check_out
+
+
+def _get_occupied_booking(state: EmailAgentState) -> dict:
     db_results = state.get("db_retrieve_results")
     if db_results is None:
         raise BusinessError(
@@ -52,6 +52,31 @@ def _assert_booking_modify_context(state: EmailAgentState) -> None:
             "변경/취소할 상태의 예약(status=occupied)이 없습니다.",
             code="BOOKING_NOT_FOUND",
         )
+    return occupied[0]
+
+
+def _resolve_update_dates(state: EmailAgentState) -> tuple[str, str]:
+    """extract 목표값 + DB 기존값 merge로 update용 날짜를 확정한다."""
+    extract_data = state.get("extract_data") or {}
+    extract_in = extract_data.get("check_in")
+    extract_out = extract_data.get("check_out")
+
+    if not extract_in and not extract_out:
+        raise BusinessError(
+            "예약 일정 변경에는 변경할 check_in 또는 check_out이 필요합니다.",
+            code="BOOKING_CONTEXT_REQUIRED",
+        )
+
+    booking = _get_occupied_booking(state)
+    check_in = extract_in or booking.get("check_in")
+    check_out = extract_out or booking.get("check_out")
+
+    if not check_in or not check_out:
+        raise BusinessError(
+            "예약 일정 변경에 필요한 날짜 정보가 부족합니다.",
+            code="BOOKING_CONTEXT_REQUIRED",
+        )
+    return check_in, check_out
 
 
 def _build_create_sql(
@@ -113,8 +138,7 @@ def build_action_sqlite(state: EmailAgentState, actions: set[str]) -> dict | Non
     if not has_booking:
         return None
 
-    needs_dates = "reservation_create" in actions or "reservation_update" in actions
-    email, check_in, check_out = _require_fields(state, require_dates=needs_dates)
+    email = _require_email(state)
 
     action_sqlite: ActionSQLite = {
         "create_sql": "",
@@ -123,7 +147,7 @@ def build_action_sqlite(state: EmailAgentState, actions: set[str]) -> dict | Non
     }
 
     if "reservation_create" in actions:
-        assert check_in is not None and check_out is not None
+        check_in, check_out = _require_create_dates(state)
         rest = state.get("rest_room_retrieve_results") or {}
         room_count = rest.get("vacant_room_count")
         if not room_count or room_count < 1:
@@ -135,13 +159,18 @@ def build_action_sqlite(state: EmailAgentState, actions: set[str]) -> dict | Non
         )
 
     if "reservation_update" in actions or "reservation_delete" in actions:
-        _assert_booking_modify_context(state)
+        if state.get("db_retrieve_results") is None:
+            raise BusinessError(
+                "예약 변경/취소에는 회원 및 예약 DB 조회가 필요합니다.",
+                code="BOOKING_CONTEXT_REQUIRED",
+            )
 
     if "reservation_update" in actions:
-        assert check_in is not None and check_out is not None
+        check_in, check_out = _resolve_update_dates(state)
         action_sqlite["update_sql"] = _build_update_sql(email, check_in, check_out)
 
     if "reservation_delete" in actions:
+        _get_occupied_booking(state)
         action_sqlite["delete_sql"] = _build_delete_sql(email)
 
     return {"action_sqlite": action_sqlite}

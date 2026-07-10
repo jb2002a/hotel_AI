@@ -36,7 +36,8 @@ def email_classification(state: EmailAgentState) -> dict[str, Any] | Command[Any
 
     [Allowed actions — include every action needed to fulfill explicit requests]
     - reservation_create: customer explicitly asks to book or reserve a room.
-    - reservation_update: customer explicitly asks to change an existing booking.
+    - reservation_update: customer explicitly asks to change check_in or check_out dates of an existing booking.
+      Do NOT use for breakfast/meal plans, room type upgrades, bedding, amenities, or name changes.
     - reservation_delete: customer explicitly asks to cancel an existing booking.
     - reservation_search: customer explicitly asks to confirm or look up their booking/member status.
 
@@ -44,17 +45,20 @@ def email_classification(state: EmailAgentState) -> dict[str, Any] | Command[Any
     List specific questions that must be answered from the hotel knowledge base to handle this email.
     Include:
     - explicit policy/price/amenity/service questions
+    - non-date change requests (breakfast add, room upgrade, bedding, high-floor assignment, name change, etc.)
     - latent lookups required to fulfill the request (e.g. promotion terms when booking at promo price,
       wheelchair rental policy when requesting wheelchair with a date change)
-  Leave empty [] if no policy lookup is needed.
+    Leave empty [] if no policy lookup is needed.
 
     [Action rules — apply strictly]
     1. Include an action only when the customer states that request clearly (direct ask or clear action verb).
     2. Do not add reservation or booking actions from context alone when not explicitly requested.
     3. Use multiple actions when there are multiple explicit requests in the same email.
 
-    category: "spam" for unsolicited ads or clearly irrelevant mail; otherwise "normal".
-    urgency: "high" only for same-day emergencies or issues needing immediate action; otherwise "normal".
+    category: "spam" for unsolicited ads, scams, or clearly irrelevant mail; otherwise "normal".
+    B2B proposals and business inquiries to the hotel are "normal", not spam.
+    urgency: "high" only for same-day emergencies requiring immediate staff action; otherwise "normal".
+    Complaints, illness, policy questions, and future booking requests are "normal" urgency.
 
     Do not invent values outside the allowed action names.
     """

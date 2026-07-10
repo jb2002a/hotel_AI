@@ -28,6 +28,9 @@ def email_ingest(state: EmailAgentState) -> dict:
     2. Do not use the sender email address as the customer's name.
     3. If the email mentions only one date, fill only the matching field and set the other date to null.
     4. Keep all unknown fields as null.
+    5. For date change requests: extract the NEW target date(s) the customer wants, not the current/old date.
+       Example: "move check-in from 2025-06-10 to 2025-06-15" -> check_in: 2025-06-15, check_out: null.
+    6. If the customer only mentions an existing booking without stating a new target date, leave date fields null.
     """
     extract_data = extract_llm.invoke(extract_prompt)
 
