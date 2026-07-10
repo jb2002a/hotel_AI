@@ -1,0 +1,704 @@
+[
+  {
+    "id": "sample_017",
+    "run_id": "019f4c2a",
+    "input": {
+      "subject": "인원 추가로 인한 변경",
+      "body": "2025-09-05 체크인 예약자 김민재입니다. 인원이 늘어서 더 큰 방으로 예약 변경 원합니다.",
+      "sender_email": "minjae@example.com"
+    },
+    "failed_metrics": {
+      "extract_match": 0.0
+    },
+    "fields": {
+      "actions": {
+        "reference": [],
+        "prediction": [
+          "reservation_update"
+        ]
+      },
+      "policy_queries": {
+        "reference": [
+          "인원 추가 시 더 큰 객실로 변경 가능 여부"
+        ],
+        "prediction": []
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": true,
+          "business_error_code": null
+        },
+        "prediction": {
+          "business_error_code": null,
+          "should_succeed": true
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": "김민재",
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": "2025-09-05",
+          "check_out": null,
+          "name": "김민재"
+        }
+      }
+    }
+  },
+  {
+    "id": "sample_034",
+    "run_id": "019f4c2a",
+    "input": {
+      "subject": "Hello there",
+      "body": "i want to... hmm... maybe tomorrow? 請問有房間嗎?",
+      "sender_email": "mix@example.com"
+    },
+    "failed_metrics": {
+      "extract_match": 0.0
+    },
+    "fields": {
+      "actions": {
+        "reference": [],
+        "prediction": [
+          "reservation_search"
+        ]
+      },
+      "policy_queries": {
+        "reference": [],
+        "prediction": []
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": true,
+          "business_error_code": null
+        },
+        "prediction": {
+          "business_error_code": "MEMBER_NOT_FOUND",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": null,
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": "2023-10-03",
+          "check_out": null,
+          "name": null
+        }
+      }
+    }
+  },
+  {
+    "id": "sample_093",
+    "run_id": "019f4c2a",
+    "input": {
+      "subject": "예약이 안 보인다고 하네요",
+      "body": "2025-06-05에 장동건 이름으로 예약한 것을 변경하려고 하는데, 시스템에서 없다고 나오네요. 확인 바랍니다.",
+      "sender_email": "jang@example.com"
+    },
+    "failed_metrics": {
+      "extract_match": 0.0
+    },
+    "fields": {
+      "actions": {
+        "reference": [
+          "reservation_search",
+          "reservation_update"
+        ],
+        "prediction": [
+          "reservation_search"
+        ]
+      },
+      "policy_queries": {
+        "reference": [],
+        "prediction": []
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": false,
+          "business_error_code": "BOOKING_NOT_FOUND"
+        },
+        "prediction": {
+          "business_error_code": null,
+          "should_succeed": true
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": "장동건",
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": "2025-06-05",
+          "check_out": null,
+          "name": "장동건"
+        }
+      }
+    }
+  },
+  {
+    "id": "sample_061",
+    "run_id": "019f4c2a",
+    "input": {
+      "subject": "과거 예약 취소 시도",
+      "body": "작년 2023년에 방문했던 송중기입니다. 그 당시 2023-12-25 예약을 이제 와서 환불하려고 하는데 취소 가능한가요?",
+      "sender_email": "songjg@example.com"
+    },
+    "failed_metrics": {
+      "extract_match": 0.0
+    },
+    "fields": {
+      "actions": {
+        "reference": [
+          "reservation_delete"
+        ],
+        "prediction": [
+          "reservation_delete"
+        ]
+      },
+      "policy_queries": {
+        "reference": [],
+        "prediction": []
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": false,
+          "business_error_code": "BOOKING_NOT_FOUND"
+        },
+        "prediction": {
+          "business_error_code": "BOOKING_NOT_FOUND",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": "송중기",
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": "2023-12-25",
+          "check_out": null,
+          "name": "송중기"
+        }
+      }
+    }
+  },
+  {
+    "id": "sample_074",
+    "run_id": "019f4c29",
+    "input": {
+      "subject": "세미나 참석차 예약",
+      "body": "장비 이름으로 2026-04-10 체크인, 2026-04-12 체크아웃 룸 예약해주세요.",
+      "sender_email": "zhangfei@example.com"
+    },
+    "failed_metrics": {
+      "extract_match": 0.0
+    },
+    "fields": {
+      "actions": {
+        "reference": [
+          "reservation_create"
+        ],
+        "prediction": [
+          "reservation_create"
+        ]
+      },
+      "policy_queries": {
+        "reference": [],
+        "prediction": []
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": true,
+          "business_error_code": null
+        },
+        "prediction": {
+          "business_error_code": null,
+          "should_succeed": true
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": "장비",
+          "check_in": "2026-04-10",
+          "check_out": "2026-04-12"
+        },
+        "prediction": {
+          "check_in": "2026-04-10",
+          "check_out": "2026-04-12",
+          "name": null
+        }
+      }
+    }
+  },
+  {
+    "id": "sample_037",
+    "run_id": "019f4c29",
+    "input": {
+      "subject": "방이 너무 더러워서 취소합니다",
+      "body": "어제 투숙했던 에릭입니다. 객실 청소 상태가 너무 안 좋아서 화가 나네요. 남은 2025-12-10 일정 예약은 전면 취소해주세요.",
+      "sender_email": "eric@example.com"
+    },
+    "failed_metrics": {
+      "extract_match": 0.0
+    },
+    "fields": {
+      "actions": {
+        "reference": [
+          "reservation_delete"
+        ],
+        "prediction": [
+          "reservation_delete"
+        ]
+      },
+      "policy_queries": {
+        "reference": [],
+        "prediction": []
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": true,
+          "business_error_code": null
+        },
+        "prediction": {
+          "business_error_code": null,
+          "should_succeed": true
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": "에릭",
+          "check_in": "2025-12-10",
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": null,
+          "check_out": "2025-12-10",
+          "name": "에릭"
+        }
+      }
+    }
+  },
+  {
+    "id": "sample_060",
+    "run_id": "019f4c29",
+    "input": {
+      "subject": "내일 기업 워크샵 전체 취소 요청",
+      "body": "대표님 건강 문제로 내일 2026-05-19 예정된 50명 규모의 워크샵 단체 숙박을 전면 취소해야 할 것 같습니다. 위약금 규정과 긴급 취소 절차를 당장 알려주십시오.",
+      "sender_email": "hr.team@example.com"
+    },
+    "failed_metrics": {
+      "extract_match": 0.0
+    },
+    "fields": {
+      "actions": {
+        "reference": [
+          "reservation_delete"
+        ],
+        "prediction": [
+          "reservation_delete"
+        ]
+      },
+      "policy_queries": {
+        "reference": [
+          "단체 숙박 긴급 취소 시 위약금 규정은?",
+          "긴급 취소 절차는?"
+        ],
+        "prediction": [
+          "cancellation policy and penalties",
+          "emergency cancellation procedures"
+        ]
+      },
+      "classification": {
+        "reference": {
+          "urgency": "high",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": false,
+          "business_error_code": "HIGH_URGENCY"
+        },
+        "prediction": {
+          "business_error_code": "BOOKING_CONTEXT_REQUIRED",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": null,
+          "check_in": "2026-05-19",
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": null,
+          "check_out": null,
+          "name": null
+        }
+      }
+    }
+  },
+  {
+    "id": "sample_020",
+    "run_id": "019f4c29",
+    "input": {
+      "subject": "오늘 밤 당일 출장 급건 방 있나요?",
+      "body": "익산 공장에 급한 문제가 생겨서 당장 오늘 밤 2026-05-18부터 묵을 곳이 필요합니다. 제일 싼 방이라도 좋으니 박과장 이름으로 바로 예약 잡아주세요.",
+      "sender_email": "manager.park@example.com"
+    },
+    "failed_metrics": {
+      "extract_match": 0.0
+    },
+    "fields": {
+      "actions": {
+        "reference": [
+          "reservation_create"
+        ],
+        "prediction": [
+          "reservation_create"
+        ]
+      },
+      "policy_queries": {
+        "reference": [],
+        "prediction": []
+      },
+      "classification": {
+        "reference": {
+          "urgency": "high",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "high"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": false,
+          "business_error_code": "HIGH_URGENCY"
+        },
+        "prediction": {
+          "business_error_code": "HIGH_URGENCY",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": "박과장",
+          "check_in": "2026-05-18",
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": "2026-05-18",
+          "check_out": "null",
+          "name": "null"
+        }
+      }
+    }
+  },
+  {
+    "id": "sample_021",
+    "run_id": "019f4c29",
+    "input": {
+      "subject": "객실에 회사 중요 서류(USB)를 두고 왔습니다!!",
+      "body": "어제 502호에서 체크아웃한 이대리입니다. 방 책상 위에 내일 발표할 회사 중요 보안 자료가 든 USB를 두고 왔는데, 급히 확인해서 보관 좀 부탁드립니다!!",
+      "sender_email": "lee.dr@example.com"
+    },
+    "failed_metrics": {
+      "extract_match": 0.0
+    },
+    "fields": {
+      "actions": {
+        "reference": [],
+        "prediction": []
+      },
+      "policy_queries": {
+        "reference": [
+          "체크아웃 후 유실물 보관 절차 및 정책"
+        ],
+        "prediction": [
+          "USB retrieval policy",
+          "lost item storage policy"
+        ]
+      },
+      "classification": {
+        "reference": {
+          "urgency": "high",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "high"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": false,
+          "business_error_code": "HIGH_URGENCY"
+        },
+        "prediction": {
+          "business_error_code": "HIGH_URGENCY",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": "이대리",
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": null,
+          "check_out": "2023-10-02",
+          "name": "이대리"
+        }
+      }
+    }
+  },
+  {
+    "id": "sample_086",
+    "run_id": "019f4c28",
+    "input": {
+      "subject": "불가피하게 취소합니다",
+      "body": "2025-10-20 ~ 2025-10-22 예약 내역 모두 취소 부탁드립니다.",
+      "sender_email": "cancel@example.com"
+    },
+    "failed_metrics": {
+      "extract_match": 0.0
+    },
+    "fields": {
+      "actions": {
+        "reference": [
+          "reservation_delete"
+        ],
+        "prediction": [
+          "reservation_delete"
+        ]
+      },
+      "policy_queries": {
+        "reference": [],
+        "prediction": []
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": true,
+          "business_error_code": null
+        },
+        "prediction": {
+          "business_error_code": "BOOKING_CONTEXT_REQUIRED",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": null,
+          "check_in": "2025-10-20",
+          "check_out": "2025-10-22"
+        },
+        "prediction": {
+          "check_in": null,
+          "check_out": null,
+          "name": null
+        }
+      }
+    }
+  },
+  {
+    "id": "sample_099",
+    "run_id": "019f4c28",
+    "input": {
+      "subject": "출장 항공편 결항으로 인한 예약 긴급 변경",
+      "body": "태풍 때문에 출장 항공편이 결항되어 비즈니스 일정이 다 꼬였습니다. 내일 2026-05-19 체크인 예정인 제 예약을 모레로 급하게 미룰 수 있을까요? 당장 본사에 보고해야 합니다.",
+      "sender_email": "biz.trip@example.com"
+    },
+    "failed_metrics": {
+      "extract_match": 0.0
+    },
+    "fields": {
+      "actions": {
+        "reference": [
+          "reservation_update"
+        ],
+        "prediction": [
+          "reservation_update"
+        ]
+      },
+      "policy_queries": {
+        "reference": [],
+        "prediction": []
+      },
+      "classification": {
+        "reference": {
+          "urgency": "high",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "high"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": false,
+          "business_error_code": "HIGH_URGENCY"
+        },
+        "prediction": {
+          "business_error_code": "HIGH_URGENCY",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": null,
+          "check_in": "2026-05-20",
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": "2026-05-21",
+          "check_out": null,
+          "name": null
+        }
+      }
+    }
+  },
+  {
+    "id": "sample_009",
+    "run_id": "019f4c28",
+    "input": {
+      "subject": "체크아웃 늦출 수 있나요",
+      "body": "비행기 시간이 저녁이라서 체크아웃 일정을 다음 날로 하루 더 연장 변경하고 싶습니다.",
+      "sender_email": "user6@domain.com"
+    },
+    "failed_metrics": {
+      "extract_match": 0.0
+    },
+    "fields": {
+      "actions": {
+        "reference": [
+          "reservation_update"
+        ],
+        "prediction": [
+          "reservation_update"
+        ]
+      },
+      "policy_queries": {
+        "reference": [],
+        "prediction": []
+      },
+      "classification": {
+        "reference": {
+          "urgency": "normal",
+          "category": "normal"
+        },
+        "prediction": {
+          "category": "normal",
+          "urgency": "normal"
+        }
+      },
+      "expected_outcome": {
+        "reference": {
+          "should_succeed": false,
+          "business_error_code": "BOOKING_CONTEXT_REQUIRED"
+        },
+        "prediction": {
+          "business_error_code": "BOOKING_CONTEXT_REQUIRED",
+          "should_succeed": false
+        }
+      },
+      "extract_data": {
+        "reference": {
+          "name": null,
+          "check_in": null,
+          "check_out": null
+        },
+        "prediction": {
+          "check_in": null,
+          "check_out": "next day",
+          "name": null
+        }
+      }
+    }
+  }
+]

@@ -3,8 +3,8 @@
 플로우
 ------
 START
-  → email_ingest
   → email_classification  분류 + actions·policy_queries 추출
+  → email_ingest          normal만 extract (spam/high는 바로 manager)
   → prepare               actions 기반 retrieve 병렬
   → sql_build             예약 SQL 생성
   → reply_draft           답변 초안 (business_error 시 no-op)
@@ -70,10 +70,9 @@ graph.add_node("manager_approval_node", manager_approval_node)
 # 엣지
 # ---------------------------------------------------------------------------
 
-graph.add_edge(START, "email_ingest_node")
-graph.add_edge("email_ingest_node", "email_classification_node")
-
-graph.add_edge("email_classification_node", "prepare_node")
+graph.add_edge(START, "email_classification_node")
+graph.add_edge("email_classification_node", "email_ingest_node")
+graph.add_edge("email_ingest_node", "prepare_node")
 graph.add_edge("prepare_node", "sql_build_node")
 graph.add_edge("sql_build_node", "reply_draft_node")
 graph.add_edge("reply_draft_node", "manager_approval_node")

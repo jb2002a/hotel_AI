@@ -1,5 +1,5 @@
 # V1 플로우
-# email_ingest -> email_classification(actions + policy_queries) -> prepare(retrieve) -> sql_build -> reply_draft -> manager_approval -> END
+# email_classification(actions + policy_queries) -> email_ingest -> prepare(retrieve) -> sql_build -> reply_draft -> manager_approval -> END
 
 from typing import Any, Literal, TypedDict
 
