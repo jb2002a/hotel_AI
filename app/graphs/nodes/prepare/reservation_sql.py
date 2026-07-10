@@ -2,6 +2,60 @@ from app.errors import BusinessError
 from app.schemas.graph_state import ActionSQLite, EmailAgentState
 
 
+def _is_iso_date(value: object) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 10
+        and value[4] == "-"
+        and value[7] == "-"
+        and value[:4].isdigit()
+        and value[5:7].isdigit()
+        and value[8:].isdigit()
+    )
+
+
+def _has_missing_booking_hint(state: EmailAgentState) -> bool:
+    email_data = state.get("email_data") or {}
+    text = f"{email_data.get('email_subject', '')}\n{email_data.get('email_content', '')}"
+    return any(
+        token in text
+        for token in [
+            "예약이 안 보",
+            "예약이 보이지",
+            "예약 조회가 안",
+            "예약이 생성 안",
+            "없다고 나오",
+            "등록 안",
+        ]
+    )
+
+
+def validate_booking_context_before_retrieve(
+    state: EmailAgentState,
+    actions: set[str],
+) -> None:
+    """DB 조회 전에 예약 변경/취소 요청의 최소 맥락을 검증한다."""
+    extract_data = state.get("extract_data") or {}
+    name = extract_data.get("name")
+    check_in = extract_data.get("check_in")
+    check_out = extract_data.get("check_out")
+    has_valid_date = _is_iso_date(check_in) or _is_iso_date(check_out)
+
+    if "reservation_update" in actions:
+        if not has_valid_date and not _has_missing_booking_hint(state):
+            raise BusinessError(
+                "예약 일정 변경에는 변경할 check_in 또는 check_out이 필요합니다.",
+                code="BOOKING_CONTEXT_REQUIRED",
+            )
+
+    if "reservation_delete" in actions:
+        if not name and not has_valid_date:
+            raise BusinessError(
+                "예약 취소에는 예약자명 또는 일정 정보가 필요합니다.",
+                code="BOOKING_CONTEXT_REQUIRED",
+            )
+
+
 def _require_email(state: EmailAgentState) -> str:
     email_data = state.get("email_data")
     if not email_data:

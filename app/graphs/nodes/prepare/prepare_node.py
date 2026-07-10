@@ -9,6 +9,9 @@ from app.graphs.nodes.retrieval import (
     policy_retrieve,
     vacancy_retrieve,
 )
+from app.graphs.nodes.prepare.reservation_sql import (
+    validate_booking_context_before_retrieve,
+)
 
 _ACTION_RETRIEVERS: dict[str, Callable[[EmailAgentState], dict]] = {
     "reservation_search": member_booking_retrieve,
@@ -46,6 +49,8 @@ def prepare_node(state: EmailAgentState) -> dict:
 
     actions_raw = state.get("actions")
     actions = set(actions_raw) if isinstance(actions_raw, list) else set()
+
+    validate_booking_context_before_retrieve(state, actions)
 
     tasks = _collect_retrievers(state, actions)
     if not tasks:

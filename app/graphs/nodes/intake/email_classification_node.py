@@ -37,7 +37,9 @@ def email_classification(state: EmailAgentState) -> dict[str, Any] | Command[Any
     [Allowed actions — include every action needed to fulfill explicit requests]
     - reservation_create: customer explicitly asks to book or reserve a room.
     - reservation_update: customer explicitly asks to change check_in or check_out dates of an existing booking.
-      Do NOT use for breakfast/meal plans, room type upgrades, bedding, amenities, or name changes.
+      This is date-only. Do NOT use reservation_update just because the email says "change", "update", or "modify".
+      Do NOT use for breakfast/meal plans, room type upgrades, larger rooms, suite upgrades, bedding,
+      amenities, allergy requests, high-floor requests, or name changes.
     - reservation_delete: customer explicitly asks to cancel an existing booking.
     - reservation_search: customer explicitly asks to confirm or look up their booking/member status.
 
@@ -54,6 +56,14 @@ def email_classification(state: EmailAgentState) -> dict[str, Any] | Command[Any
     1. Include an action only when the customer states that request clearly (direct ask or clear action verb).
     2. Do not add reservation or booking actions from context alone when not explicitly requested.
     3. Use multiple actions when there are multiple explicit requests in the same email.
+    4. If a request changes a non-date booking attribute, leave actions empty and put the needed lookup
+       in policy_queries.
+
+    [Non-date change examples — actions must be []]
+    - "upgrade my booked room to a suite" -> actions: [], policy_queries: ["suite upgrade availability"]
+    - "change my booking to include breakfast" -> actions: [], policy_queries: ["adding breakfast to an existing booking"]
+    - "change to a room with three beds" -> actions: [], policy_queries: ["larger room or three-bed room availability"]
+    - "avoid goose bedding because of dust allergy" -> actions: [], policy_queries: ["alternative bedding for allergy requests"]
 
     category: "spam" for unsolicited ads, scams, or clearly irrelevant mail; otherwise "normal".
     B2B proposals and business inquiries to the hotel are "normal", not spam.
