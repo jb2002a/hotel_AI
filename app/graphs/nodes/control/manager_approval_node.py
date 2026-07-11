@@ -4,8 +4,6 @@ from langgraph.types import interrupt
 
 def manager_approval_node(state: EmailAgentState) -> dict:
     payload = build_approval_payload(state)
-    # 평가를 위해 조기 return 처리, 후에 하단 코드 추가
-    return {}
 
     resume_payload = interrupt(
         {
@@ -13,7 +11,7 @@ def manager_approval_node(state: EmailAgentState) -> dict:
             "payload": payload,
         }
     )
-    updated_state: dict = {"business_error": None}
+    updated_state: dict = {"business_error": None, "manager_errors": []}
 
     if "draft_response" in resume_payload:
         updated_state["draft_response"] = resume_payload["draft_response"]

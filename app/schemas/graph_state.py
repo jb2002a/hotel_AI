@@ -39,6 +39,27 @@ class BusinessErrorPayload(TypedDict):
     message: str
 
 
+class ManagerClassification(TypedDict):
+    category: Literal["normal", "spam"] | None
+    urgency: Literal["normal", "high"] | None
+    actions: list[str]
+
+
+class ManagerError(TypedDict):
+    type: str
+    code: str
+    message: str
+
+
+class ManagerApprovalPayload(TypedDict):
+    email_data: EmailData
+    classification: ManagerClassification
+    extract_data: ExtractData | None
+    draft_response: str | None
+    action_sqlite: ActionSQLite | None
+    errors: list[ManagerError]
+
+
 class EmailAgentState(TypedDict):
     # 고객의 이메일 데이터
     email_data: EmailData
@@ -76,17 +97,57 @@ class EmailAgentState(TypedDict):
     # 업무 예외 상태 (승인/검토 라우팅용)
     business_error: BusinessErrorPayload | None
 
+    # 매니저에게 표시할 에러 목록
+    manager_errors: list[ManagerError] | None
 
-def build_approval_payload(state: EmailAgentState) -> dict[str, Any]:
-    """UI/interrupt용 승인 스냅샷. state에 중복 저장하지 않는다."""
+
+def _build_manager_errors(state: EmailAgentState) -> list[ManagerError]:
+    manager_errors = state.get("manager_errors")
+    if manager_errors:
+        return list(manager_errors)
+
+    errors: list[ManagerError] = []
+    business_error = state.get("business_error")
+    if business_error:
+        errors.append(
+            {
+                "type": "business_error",
+                "code": business_error["code"],
+                "message": business_error["message"],
+            }
+        )
+    return errors
+
+
+def _build_manager_classification(state: EmailAgentState) -> ManagerClassification:
+    classification = state.get("classification") or {}
+    actions_raw = state.get("actions")
+    actions = list(actions_raw) if isinstance(actions_raw, list) else []
     return {
-        "email_data": state.get("email_data"),
+        "category": classification.get("category"),
+        "urgency": classification.get("urgency"),
+        "actions": actions,
+    }
+
+
+def _build_manager_email_data(state: EmailAgentState) -> EmailData:
+    email_data = state.get("email_data")
+    if email_data:
+        return email_data
+    return {
+        "email_subject": "",
+        "email_content": "",
+        "sender_email": "",
+    }
+
+
+def build_approval_payload(state: EmailAgentState) -> ManagerApprovalPayload:
+    """UI/interrupt용 매니저 승인 스냅샷. state에 중복 저장하지 않는다."""
+    return {
+        "email_data": _build_manager_email_data(state),
+        "classification": _build_manager_classification(state),
         "extract_data": state.get("extract_data"),
-        "actions": state.get("actions"),
-        "policy_queries": state.get("policy_queries"),
-        "db_retrieve_results": state.get("db_retrieve_results"),
-        "rest_room_retrieve_results": state.get("rest_room_retrieve_results"),
-        "action_sqlite": state.get("action_sqlite"),
         "draft_response": state.get("draft_response"),
-        "business_error": state.get("business_error"),
+        "action_sqlite": state.get("action_sqlite"),
+        "errors": _build_manager_errors(state),
     }

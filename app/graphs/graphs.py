@@ -29,8 +29,42 @@ from app.schemas.graph_state import EmailAgentState, build_approval_payload
 # 노드
 # ---------------------------------------------------------------------------
 
-# 자식 노드에서 던진 BusinessError를 그래프 중단 없이 state에 기록
-def _guard_business_error(
+def _business_error_update(exc: BusinessError) -> dict[str, Any]:
+    return {
+        "business_error": {
+            "code": exc.code,
+            "message": exc.message,
+        },
+        "manager_errors": [
+            {
+                "type": "business_error",
+                "code": exc.code,
+                "message": exc.message,
+            }
+        ],
+    }
+
+
+def _system_error_update(exc: Exception) -> dict[str, Any]:
+    code = exc.__class__.__name__
+    message = str(exc) or "예상하지 못한 시스템 오류가 발생했습니다."
+    return {
+        "business_error": {
+            "code": "SYSTEM_ERROR",
+            "message": message,
+        },
+        "manager_errors": [
+            {
+                "type": "system_error",
+                "code": code,
+                "message": message,
+            }
+        ],
+    }
+
+
+# 자식 노드 예외를 그래프 중단 없이 state에 기록하고 매니저 승인으로 라우팅
+def _guard_node_error(
     node_fn: Callable[[EmailAgentState], dict[str, Any] | Command[Any]],
 ) -> Callable[[EmailAgentState], dict[str, Any] | Command[Any]]:
     def _wrapped(state: EmailAgentState) -> dict[str, Any] | Command[Any]:
@@ -38,12 +72,12 @@ def _guard_business_error(
             return node_fn(state)
         except BusinessError as exc:
             return Command(
-                update={
-                    "business_error": {
-                        "code": exc.code,
-                        "message": exc.message,
-                    }
-                },
+                update=_business_error_update(exc),
+                goto="manager_approval_node",
+            )
+        except Exception as exc:
+            return Command(
+                update=_system_error_update(exc),
                 goto="manager_approval_node",
             )
 
@@ -53,15 +87,15 @@ def _guard_business_error(
 graph = StateGraph(EmailAgentState)
 
 # Intake
-graph.add_node("email_ingest_node", _guard_business_error(email_ingest))
-graph.add_node("email_classification_node", _guard_business_error(email_classification))
+graph.add_node("email_ingest_node", _guard_node_error(email_ingest))
+graph.add_node("email_classification_node", _guard_node_error(email_classification))
 
 # Prepare
-graph.add_node("prepare_node", _guard_business_error(prepare_node))
-graph.add_node("sql_build_node", _guard_business_error(sql_build_node))
+graph.add_node("prepare_node", _guard_node_error(prepare_node))
+graph.add_node("sql_build_node", _guard_node_error(sql_build_node))
 
 # Response
-graph.add_node("reply_draft_node", _guard_business_error(reply_draft_node))
+graph.add_node("reply_draft_node", _guard_node_error(reply_draft_node))
 
 # Control
 graph.add_node("manager_approval_node", manager_approval_node)
@@ -102,11 +136,24 @@ def _default_initial_state() -> dict:
         "draft_response": None,
         "manager_comment": None,
         "business_error": None,
+        "manager_errors": None,
     }
 
 
 if __name__ == "__main__":
     # python -m app.graphs.graphs
-    compiled_graph = graph.compile()
-    result = compiled_graph.invoke(_default_initial_state())
+    import uuid
+
+    from langgraph.types import Command
+
+    try:
+        from langgraph.checkpoint.memory import InMemorySaver as _MemorySaver
+    except ImportError:
+        from langgraph.checkpoint.memory import MemorySaver as _MemorySaver
+
+    compiled_graph = graph.compile(checkpointer=_MemorySaver())
+    config = {"configurable": {"thread_id": str(uuid.uuid4())}}
+    result = compiled_graph.invoke(_default_initial_state(), config=config)
+    if result.get("__interrupt__"):
+        result = compiled_graph.invoke(Command(resume={}), config=config)
     print(build_approval_payload(result))
