@@ -9,3 +9,5 @@ dotenv
 sentence-transformers
 llama_cloud
 pytest
+fastapi
+uvicorn[standard]

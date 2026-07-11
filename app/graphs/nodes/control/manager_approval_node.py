@@ -13,6 +13,18 @@ def manager_approval_node(state: EmailAgentState) -> dict:
     )
     updated_state: dict = {"business_error": None, "manager_errors": []}
 
+    if "email_data" in resume_payload and resume_payload["email_data"] is not None:
+        updated_state["email_data"] = resume_payload["email_data"]
+    if "extract_data" in resume_payload:
+        updated_state["extract_data"] = resume_payload["extract_data"]
+    if "classification" in resume_payload and resume_payload["classification"] is not None:
+        classification = {
+            **(state.get("classification") or {}),
+            **resume_payload["classification"],
+        }
+        updated_state["classification"] = classification
+        if "actions" in classification:
+            updated_state["actions"] = classification["actions"]
     if "draft_response" in resume_payload:
         updated_state["draft_response"] = resume_payload["draft_response"]
     if "action_sqlite" in resume_payload:

@@ -2,11 +2,20 @@ from dotenv import load_dotenv
 
 load_dotenv(override=True)
 
+import uuid
+
+from langgraph.types import Command
+
+try:
+    from langgraph.checkpoint.memory import InMemorySaver as _MemorySaver
+except ImportError:
+    from langgraph.checkpoint.memory import MemorySaver as _MemorySaver
+
 from app.config.config import LLM
 from app.graphs.graphs import graph
 from langsmith import evaluate
 
-compiled = graph.compile()
+compiled = graph.compile(checkpointer=_MemorySaver())
 
 
 def _actions_for_eval(data: dict) -> set[str]:
@@ -28,6 +37,7 @@ def _has_policy_queries(data: dict) -> bool:
 
 
 def target(inputs: dict) -> dict:
+    config = {"configurable": {"thread_id": str(uuid.uuid4())}}
     state = compiled.invoke(
         {
             "email_data": {
@@ -35,8 +45,11 @@ def target(inputs: dict) -> dict:
                 "email_content": inputs["body"],
                 "sender_email": inputs["sender_email"],
             }
-        }
+        },
+        config=config,
     )
+    if state.get("__interrupt__"):
+        state = compiled.invoke(Command(resume={}), config=config)
     clf = state.get("classification") or {}
     business_error = state.get("business_error")
 

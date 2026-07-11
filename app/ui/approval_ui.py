@@ -56,7 +56,7 @@ class ApprovalUI:
         plan_frame.pack(fill="x", padx=12, pady=(0, 4))
         tk.Label(
             plan_frame,
-            text="그래프 액션 (state.actions)",
+            text="예약 액션 (classification.actions)",
             anchor="w",
         ).pack(anchor="w")
         self.plan_actions_text = scrolledtext.ScrolledText(
@@ -148,6 +148,7 @@ class ApprovalUI:
             "draft_response": None,
             "manager_comment": None,
             "business_error": None,
+            "manager_errors": None,
         }
 
     def start_request(self) -> None:
@@ -163,6 +164,14 @@ class ApprovalUI:
 
         self._render_result(result)
 
+    def _extract_actions_from_packet(self, packet: dict) -> list[str] | None:
+        classification = packet.get("classification")
+        if isinstance(classification, dict):
+            raw = classification.get("actions")
+            if isinstance(raw, list):
+                return raw
+        return None
+
     def _render_result(self, result: dict) -> None:
         self._set_text(
             self.result_text, json.dumps(result, ensure_ascii=False, indent=2, default=str)
@@ -174,9 +183,7 @@ class ApprovalUI:
 
         actions_preview: list[str] | None = None
         if isinstance(packet, dict):
-            raw = packet.get("actions")
-            if isinstance(raw, list):
-                actions_preview = raw
+            actions_preview = self._extract_actions_from_packet(packet)
         if actions_preview is None and isinstance(result, dict):
             raw = result.get("actions")
             if isinstance(raw, list):
