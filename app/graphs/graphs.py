@@ -9,6 +9,7 @@ START
   → sql_build             예약 SQL 생성
   → reply_draft           답변 초안 (business_error 시 no-op)
   → manager_approval      interrupt/UI용 payload (+ interrupt, UI)
+  → send_email            승인된 draft 발송
   → END
 """
 
@@ -22,7 +23,7 @@ from app.errors import BusinessError
 from app.graphs.nodes.control import manager_approval_node
 from app.graphs.nodes.intake import email_classification, email_ingest
 from app.graphs.nodes.prepare import prepare_node, sql_build_node
-from app.graphs.nodes.response import reply_draft_node
+from app.graphs.nodes.response import reply_draft_node, send_email_node
 from app.schemas.graph_state import EmailAgentState, build_approval_payload
 
 # ---------------------------------------------------------------------------
@@ -84,6 +85,16 @@ def _guard_node_error(
     return _wrapped
 
 
+def _send_email_safe(state: EmailAgentState) -> dict[str, Any]:
+    """발송 실패 시 재-interrupt 없이 state에 에러만 기록하고 종료."""
+    try:
+        return send_email_node(state)
+    except BusinessError as exc:
+        return {**_business_error_update(exc), "email_sent": False}
+    except Exception as exc:
+        return {**_system_error_update(exc), "email_sent": False}
+
+
 graph = StateGraph(EmailAgentState)
 
 # Intake
@@ -99,6 +110,7 @@ graph.add_node("reply_draft_node", _guard_node_error(reply_draft_node))
 
 # Control
 graph.add_node("manager_approval_node", manager_approval_node)
+graph.add_node("send_email_node", _send_email_safe)
 
 # ---------------------------------------------------------------------------
 # 엣지
@@ -111,7 +123,8 @@ graph.add_edge("prepare_node", "sql_build_node")
 graph.add_edge("sql_build_node", "reply_draft_node")
 graph.add_edge("reply_draft_node", "manager_approval_node")
 
-graph.add_edge("manager_approval_node", END)
+graph.add_edge("manager_approval_node", "send_email_node")
+graph.add_edge("send_email_node", END)
 
 #---------------------------------------------------------------------------#
 

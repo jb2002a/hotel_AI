@@ -1,8 +1,8 @@
 import type {
   EmailData,
   ExtractData,
+  InboxEmailSummary,
   ManagerClassification,
-  MockEmailSummary,
   StartRunResponse,
   SubmitResponse,
 } from "./types";
@@ -21,14 +21,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export function fetchMockEmails(): Promise<MockEmailSummary[]> {
-  return request<MockEmailSummary[]>("/mock-emails");
+export function fetchInboxEmails(): Promise<InboxEmailSummary[]> {
+  return request<InboxEmailSummary[]>("/inbox-emails");
 }
 
-export function startRun(emailId: string): Promise<StartRunResponse> {
-  return request<StartRunResponse>("/runs", {
+export function startRunFromEmail(uid: string): Promise<StartRunResponse> {
+  return request<StartRunResponse>("/runs/from-email", {
     method: "POST",
-    body: JSON.stringify({ email_id: emailId }),
+    body: JSON.stringify({ uid }),
   });
 }
 

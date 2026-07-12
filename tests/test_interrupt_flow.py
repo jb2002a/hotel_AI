@@ -43,6 +43,7 @@ def test_interrupt_and_resume_flow():
             "draft_response": "edited draft",
             "action_sqlite": payload["action_sqlite"],
             "manager_comment": "ok",
+            "email_sent": True,
         },
     ]
 
@@ -62,6 +63,7 @@ def test_interrupt_and_resume_flow():
         )
         assert submit["status"] == "completed"
         assert submit["result"]["draft_response"] == "edited draft"
+        assert submit["result"]["email_sent"] is True
 
         mock_graph.invoke.assert_any_call(
             Command(

@@ -1,3 +1,12 @@
+export interface InboxEmailSummary {
+  uid: string;
+  message_id: string;
+  subject: string;
+  sender_email: string;
+  preview: string;
+  received_at: string | null;
+}
+
 export interface MockEmailSummary {
   id: string;
   subject: string;

@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import { fetchMockEmails, startRun, submitApproval } from "./api";
+import { fetchInboxEmails, startRunFromEmail, submitApproval } from "./api";
 import type {
   ApprovalPayload,
   EmailData,
   ExtractData,
+  InboxEmailSummary,
   ManagerClassification,
-  MockEmailSummary,
   StartRunResponse,
 } from "./types";
 import "./App.css";
@@ -40,7 +40,7 @@ const parseActions = (value: string) =>
 
 function App() {
   const [view, setView] = useState<View>("list");
-  const [emails, setEmails] = useState<MockEmailSummary[]>([]);
+  const [emails, setEmails] = useState<InboxEmailSummary[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [run, setRun] = useState<StartRunResponse | null>(null);
@@ -58,7 +58,7 @@ function App() {
   const loadEmails = useCallback(async () => {
     setError(null);
     try {
-      const data = await fetchMockEmails();
+      const data = await fetchInboxEmails();
       setEmails(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "목록 로드 실패");
@@ -83,11 +83,11 @@ function App() {
     setManagerComment("");
   };
 
-  const handleRun = async (emailId: string) => {
+  const handleRun = async (uid: string) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await startRun(emailId);
+      const response = await startRunFromEmail(uid);
       setRun(response);
       hydrateEditors(response.approval_payload);
       setView("review");
@@ -139,7 +139,7 @@ function App() {
         <div>
           <span className="eyebrow">Human-in-the-loop Demo</span>
           <h1>Hotel AI Manager Approval</h1>
-          <p>mock 메일 선택 → LLM 파이프라인 → interrupt 검토 → submit resume</p>
+          <p>실제 Gmail 수신 메일([hotel]) → LLM 파이프라인 → 승인 검토 → 답변 메일 발송</p>
         </div>
       </header>
 
@@ -148,16 +148,16 @@ function App() {
       {view === "list" && (
         <section className="panel">
           <div className="panel-header">
-            <h2>Mock 이메일 목록</h2>
+            <h2>실제 수신 메일 ([hotel])</h2>
             <button type="button" onClick={() => void loadEmails()} disabled={loading}>
               새로고침
             </button>
           </div>
           <ul className="email-list">
             {emails.map((email) => (
-              <li key={email.id} className="email-card">
+              <li key={email.uid} className="email-card">
                 <div className="email-meta">
-                  <span className="email-id">{email.id}</span>
+                  <span className="email-id">uid: {email.uid}</span>
                   <strong>{email.subject}</strong>
                   <span>{email.sender_email}</span>
                 </div>
@@ -166,7 +166,7 @@ function App() {
                   type="button"
                   className="primary"
                   disabled={loading}
-                  onClick={() => void handleRun(email.id)}
+                  onClick={() => void handleRun(email.uid)}
                 >
                   파이프라인 실행
                 </button>
@@ -394,7 +394,7 @@ function App() {
           <div className="panel-header">
             <h2>검토 반영 완료</h2>
           </div>
-          <p className="success">그래프가 resume되어 END까지 완료되었습니다. (send_email 미연결)</p>
+          <p className="success">승인 내용이 반영되었고, 답변 메일 발송까지 완료되었습니다.</p>
           <pre className="readonly">{JSON.stringify(finalResult, null, 2)}</pre>
           <div className="actions">
             <button type="button" className="primary" onClick={handleBackToList}>
