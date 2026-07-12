@@ -3,10 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import graph_runner, mock_loader
 from app.api.schemas import (
+    InboxEmailSummary,
     MockEmailSummary,
+    StartEmailRunRequest,
     StartRunRequest,
     SubmitApprovalRequest,
 )
+from app.services import email_service
 
 app = FastAPI(title="Hotel AI Manager Approval API")
 
@@ -22,6 +25,41 @@ app.add_middleware(
 @app.get("/mock-emails", response_model=list[MockEmailSummary])
 def list_mock_emails() -> list[MockEmailSummary]:
     return [MockEmailSummary(**row) for row in mock_loader.load_mock_emails()]
+
+
+@app.get("/inbox-emails", response_model=list[InboxEmailSummary])
+def list_inbox_emails() -> list[InboxEmailSummary]:
+    try:
+        return [
+            InboxEmailSummary(**row) for row in email_service.list_inbox_emails()
+        ]
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@app.post("/runs/from-email")
+def start_run_from_email(body: StartEmailRunRequest) -> dict:
+    try:
+        email_record = email_service.get_email_by_uid(body.uid)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    if email_record is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Unknown or ineligible inbox email uid: {body.uid}",
+        )
+
+    initial_state = email_service.build_initial_state_from_email(email_record)
+    email_id = email_record.get("message_id") or f"imap:{body.uid}"
+    try:
+        return graph_runner.start_run(email_id, initial_state)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @app.post("/runs")

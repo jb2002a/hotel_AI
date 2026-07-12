@@ -12,6 +12,19 @@ class StartRunRequest(BaseModel):
     email_id: str
 
 
+class InboxEmailSummary(BaseModel):
+    uid: str
+    message_id: str
+    subject: str
+    sender_email: str
+    preview: str
+    received_at: str | None = None
+
+
+class StartEmailRunRequest(BaseModel):
+    uid: str
+
+
 class ActionSQLitePayload(BaseModel):
     create_sql: str = ""
     update_sql: str = ""
