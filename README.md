@@ -56,6 +56,11 @@ flowchart TD
     PREPARE --> SQL[sql_build<br/>예약 SQL 초안 생성]
     SQL --> DRAFT[reply_draft<br/>고객 답변 초안 생성]
     DRAFT --> APPROVAL
+    ERROR[[business/system error<br/>state에 기록]]
+    PREPARE -.-> ERROR
+    SQL -.-> ERROR
+    DRAFT -.-> ERROR
+    ERROR -.-> APPROVAL
     APPROVAL -->|approve / edit| ACTION[sql_action<br/>DB 실쓰기 미구현<br/>참고 SQL만 전달]
     ACTION --> SEND[send_email<br/>승인된 답변 발송]
     APPROVAL -->|reject| END([END])
