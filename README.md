@@ -56,7 +56,8 @@ flowchart TD
     PREPARE --> SQL[sql_build<br/>예약 SQL 초안 생성]
     SQL --> DRAFT[reply_draft<br/>고객 답변 초안 생성]
     DRAFT --> APPROVAL
-    APPROVAL -->|approve / edit| SEND[send_email<br/>승인된 답변 발송]
+    APPROVAL -->|approve / edit| ACTION[sql_action<br/>DB 실쓰기 미구현<br/>참고 SQL만 전달]
+    ACTION --> SEND[send_email<br/>승인된 답변 발송]
     APPROVAL -->|reject| END([END])
     SEND --> END
 ```
@@ -96,8 +97,8 @@ tests/             # interrupt / API / 발송 등
 
 ## Evaluation
 
-최대한 다양한 호텔 고객 메일 시나리오를 포함한 **golden dataset 108건**을 직접 구성했습니다.  
-데이터셋은 spam / high urgency / normal 분류, 예약 생성·변경·취소·조회, 규정 문의, 복합 의도, 성공/실패 케이스를 포함합니다.
+최대한 다양한 호텔 고객 메일 시나리오를 반영한 **golden dataset 108건**을 직접 구성했습니다.  
+spam / high urgency / normal 분류, 예약 생성·변경·취소·조회, 규정 문의, 복합 의도, 성공/실패 케이스 등 다양한 타입의 데이터를 준비해 특정 패턴에 과적합되는 것을 최대한 방지했습니다.
 
 LangSmith 평가를 총 **11회 반복**하며 실패 케이스를 분석하고 프롬프트·라우팅·상태 처리 기준을 개선했습니다.  
 최종적으로 전체 metric에서 목표 기준 **0.90**을 상회했습니다.
@@ -120,6 +121,12 @@ LangSmith 평가를 총 **11회 반복**하며 실패 케이스를 분석하고 
 
 - 데이터셋: `resources/mail_dataset.jsonl` (108 samples)
 - 실행: `python -m app.evaluation.run_eval_pipeline`
+
+### 기술 블로그
+
+평가 목표 설정, 실패 케이스 분석, 11회 개선 과정은 작성 후 아래에 링크합니다.
+
+- `[평가 개선 과정 — 추후 기입]`
 
 ---
 
@@ -199,15 +206,6 @@ pytest
 - **예약 DB 실쓰기(`action_node`)는 의도적으로 미구현**입니다. 실행 시마다 DB 상태가 바뀌면 평가·시연 재현이 어려워지기 때문입니다. 생성된 SQL을 실행하는 단계는 상대적으로 단순하며, 필요 시 바로 연결할 수 있습니다.
 - 데모/면접에서는 생성된 `action_sqlite`를 **참고용 SQL**로 답변 메일에 포함해, 에이전트의 예약 처리 의도를 보여 줍니다.
 - 프로덕션급 인증·권한·멀티테넌시·대규모 동시성은 범위 밖입니다.
-
----
-
-## More Reading
-
-기술 블로그(설계 · 평가 개선 · HITL)는 작성 후 아래에 링크합니다.
-
-- `[글 1 제목 — 추후 기입]`
-- `[글 2 제목 — 추후 기입]`
 
 ---
 
