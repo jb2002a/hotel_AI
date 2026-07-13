@@ -48,21 +48,16 @@
 
 ```mermaid
 flowchart TD
-    START([START]) --> CLASSIFY[email_classification<br/>분류 + actions / policy_queries]
-    CLASSIFY --> INGEST{normal mail?}
-    INGEST -->|normal| EXTRACT[email_ingest<br/>예약 슬롯 추출]
-    INGEST -->|spam / high urgency| APPROVAL[manager_approval<br/>LangGraph interrupt]
-    EXTRACT --> PREPARE[prepare<br/>정책 RAG / 예약·공실 조회]
-    PREPARE --> SQL[sql_build<br/>예약 SQL 초안 생성]
-    SQL --> DRAFT[reply_draft<br/>고객 답변 초안 생성]
+    START([START]) --> CLASSIFY[email_classification]
+    CLASSIFY --> INGEST{normal?}
+    INGEST -->|yes| EXTRACT[email_ingest]
+    INGEST -->|spam / high urgency| APPROVAL[manager_approval]
+    EXTRACT --> PREPARE[prepare]
+    PREPARE --> SQL[sql_build]
+    SQL --> DRAFT[reply_draft]
     DRAFT --> APPROVAL
-    ERROR[[business/system error<br/>state에 기록]]
-    PREPARE -.-> ERROR
-    SQL -.-> ERROR
-    DRAFT -.-> ERROR
-    ERROR -.-> APPROVAL
-    APPROVAL -->|approve / edit| ACTION[sql_action<br/>DB 실쓰기 미구현<br/>참고 SQL만 전달]
-    ACTION --> SEND[send_email<br/>승인된 답변 발송]
+    APPROVAL -->|approve / edit| ACTION[sql_action]
+    ACTION --> SEND[send_email]
     APPROVAL -->|reject| END([END])
     SEND --> END
 ```
