@@ -6,8 +6,8 @@ from langchain_openai import ChatOpenAI
 load_dotenv(override=True)
 
 BASE_DIR = pathlib.Path(__file__).parent.parent.parent
-USER_MOCK_DATA_PATH = BASE_DIR / "resoruces" / "happy_mock_dataset.jsonl"
-DOCX_DATA_PATH = BASE_DIR / "resoruces" / "호텔 이용 및 환불 규정집.docx"
+USER_MOCK_DATA_PATH = BASE_DIR / "resources" / "happy_mock_dataset.jsonl"
+DOCX_DATA_PATH = BASE_DIR / "resources" / "호텔 이용 및 환불 규정집.docx"
 DB_PATH = BASE_DIR / "app" / "database" / "mock_hotel.db"
 EMBEDING_MODEL = "BAAI/bge-m3"
 CHROMA_DB_PATH = "./chroma_db"

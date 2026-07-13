@@ -8,7 +8,7 @@ load_dotenv(override=True)
 
 DATASET_NAME = "hotel_ai_email_dataset"
 DATASET_DESCRIPTION = "호텔 AI 메일 데이터셋"
-JSONL_PATH = "resoruces/mail_dataset.jsonl"
+JSONL_PATH = "resources/mail_dataset.jsonl"
 
 def upload_dataset() -> int:
     """JSONL을 LangSmith 데이터셋에 업로드한다. 업로드한 예제 수를 반환한다."""

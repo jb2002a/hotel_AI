@@ -4,7 +4,7 @@ import json
 import re
 from pathlib import Path
 
-JSONL_PATH = Path(__file__).resolve().parents[1] / "resoruces" / "mail_dataset.jsonl"
+JSONL_PATH = Path(__file__).resolve().parents[1] / "resources" / "mail_dataset.jsonl"
 
 _QUESTION_MARKERS = (
     "?",

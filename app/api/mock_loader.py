@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-_DATASET_PATH = Path(__file__).resolve().parents[2] / "resoruces" / "mail_dataset.jsonl"
+_DATASET_PATH = Path(__file__).resolve().parents[2] / "resources" / "mail_dataset.jsonl"
 
 
 def _preview(body: str, max_len: int = 120) -> str:

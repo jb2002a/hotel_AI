@@ -1,6 +1,6 @@
 import json
 
-with open("resoruces/mail_dataset.jsonl", encoding="utf-8") as f:
+with open("resources/mail_dataset.jsonl", encoding="utf-8") as f:
     samples = [json.loads(line) for line in f if line.strip()]
 
 import sqlite3

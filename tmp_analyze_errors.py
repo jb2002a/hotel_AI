@@ -2,7 +2,7 @@ import json
 from collections import Counter, defaultdict
 
 with open(
-    "resoruces/eval_errors_hotel_ai_em_eval-48884257_outcome_match_action_match_extract_match.json",
+    "resources/eval_errors_hotel_ai_em_eval-48884257_outcome_match_action_match_extract_match.json",
     encoding="utf-8",
 ) as f:
     data = json.load(f)

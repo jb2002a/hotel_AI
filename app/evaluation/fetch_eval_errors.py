@@ -241,7 +241,7 @@ def _resolve_output_path(output: str | None, experiment: str, metrics: list[str]
     safe_exp = experiment.replace(" ", "_").replace("/", "-")
     safe_metrics = "_".join(metrics)
     filename = f"eval_errors_{safe_exp}_{safe_metrics}.json"
-    return os.path.join("resoruces", filename)
+    return os.path.join("resources", filename)
 
 
 def _save_json(data: list[dict], path: str) -> None:
