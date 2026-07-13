@@ -1,6 +1,6 @@
 # 호텔 메일 사무자동화 에이전트
 
-호텔 고객 메일을 **분류 · 정보 추출 · 규정 RAG · 예약 SQL 생성 · 답변 초안**까지 처리하고, 매니저 승인 후에만 회신을 보내는 LangGraph 기반 LLM 에이전트입니다.
+호텔 고객 메일을 **분류 · 정보 추출 · 규정 RAG · 예약 SQL 초안 생성 · 답변 초안**까지 처리하고, 매니저 승인 후에만 회신을 보내는 LangGraph 기반 LLM 에이전트입니다.
 
 코로나19 이후 호텔·숙박 업계의 인력 공백이 충분히 회복되지 않으며 구인난이 이어지고 있습니다. 반복적인 메일 응대·예약 문의 처리는 현장의 분명한 페인 포인트이고, **Human-in-the-loop를 포함한 사무자동화**가 그 부담을 줄일 수 있다고 판단해 이 프로젝트를 선정·구현했습니다.
 
@@ -8,7 +8,7 @@
 
 ## Demo
 
-> 구인 기간 동안 관리자 승인 사이트를 공개 운영할 예정입니다. URL은 아래에 업데이트합니다.
+> 시연 기간 동안 관리자 승인 사이트를 공개 운영할 예정입니다. URL은 아래에 업데이트합니다.
 
 - **Live Demo**: `[데모 URL — 추후 기입]`
 - **시연 흐름**: 수신 메일 선택 → 에이전트 실행 → 승인 화면에서 draft/SQL 검토·수정 → 승인/반려 → 답변 메일 발송
@@ -46,19 +46,23 @@
 
 ## Architecture
 
-```text
-START
-  → email_classification   # 분류 + actions · policy_queries
-  → email_ingest           # normal만 extract (spam/high는 승인 경로)
-  → prepare                # 정책 RAG / 예약·공실 retrieve (병렬)
-  → sql_build              # 예약 SQL 초안
-  → reply_draft            # 고객 답변 초안
-  → manager_approval       # interrupt → 프론트 승인/수정
-  → send_email             # 승인된 draft 발송 (+ 참고 SQL)
-  → END
+```mermaid
+flowchart TD
+    START([START]) --> CLASSIFY[email_classification<br/>분류 + actions / policy_queries]
+    CLASSIFY --> INGEST{normal mail?}
+    INGEST -->|normal| EXTRACT[email_ingest<br/>예약 슬롯 추출]
+    INGEST -->|spam / high urgency| APPROVAL[manager_approval<br/>LangGraph interrupt]
+    EXTRACT --> PREPARE[prepare<br/>정책 RAG / 예약·공실 조회]
+    PREPARE --> SQL[sql_build<br/>예약 SQL 초안 생성]
+    SQL --> DRAFT[reply_draft<br/>고객 답변 초안 생성]
+    DRAFT --> APPROVAL
+    APPROVAL -->|approve / edit| SEND[send_email<br/>승인된 답변 발송]
+    APPROVAL -->|reject| END([END])
+    SEND --> END
 ```
 
 비즈니스/시스템 오류는 그래프를 강제 종료하지 않고 state에 기록한 뒤 매니저 승인 노드로 넘깁니다.
+React 승인 UI는 FastAPI 실행/조회/승인 API를 통해 그래프 실행 상태를 확인하고, 승인·수정 결과를 LangGraph `resume`으로 다시 주입합니다.
 
 ### 디렉터리
 
@@ -70,7 +74,7 @@ app/
   evaluation/      # LangSmith 업로드 · EM 평가
   services/        # 메일 · DB · 벡터스토어
 frontend/          # React 매니저 승인 UI
-resoruces/         # 평가 데이터셋 · 규정 문서 · mock
+resources/         # 평가 데이터셋 · 규정 문서 · mock
 tests/             # interrupt / API / 발송 등
 ```
 
@@ -92,8 +96,11 @@ tests/             # interrupt / API / 발송 등
 
 ## Evaluation
 
-목표 Exact Match **0.90** 대비, 아래 평균 점수로 상회했습니다.  
-개선 과정(실패 케이스 분석 · 프롬프트/라우팅 수정)은 기술 블로그에 정리할 예정입니다.
+최대한 다양한 호텔 고객 메일 시나리오를 포함한 **golden dataset 108건**을 직접 구성했습니다.  
+데이터셋은 spam / high urgency / normal 분류, 예약 생성·변경·취소·조회, 규정 문의, 복합 의도, 성공/실패 케이스를 포함합니다.
+
+LangSmith 평가를 총 **11회 반복**하며 실패 케이스를 분석하고 프롬프트·라우팅·상태 처리 기준을 개선했습니다.  
+최종적으로 전체 metric에서 목표 기준 **0.90**을 상회했습니다.
 
 | Metric | AVG |
 |--------|-----|
@@ -103,7 +110,15 @@ tests/             # interrupt / API / 발송 등
 | `outcome_match` | **0.92** |
 | `policy_queries_presence_match` | **0.93** |
 
-- 데이터셋: `resoruces/mail_dataset.jsonl` (108 samples)
+### Metric 기준
+
+- `action_match`: 예측한 예약/정책 처리 액션 집합이 golden actions와 정확히 일치하는지 평가
+- `classification_match`: 메일 category와 urgency가 golden classification과 일치하는지 평가
+- `extract_match`: 이름, 체크인, 체크아웃 등 핵심 예약 슬롯이 golden extract data와 일치하는지 평가
+- `outcome_match`: 처리 성공 여부와 business error code가 golden expected outcome과 일치하는지 평가
+- `policy_queries_presence_match`: 규정 RAG 검색이 필요한 메일에서 policy query 생성 여부가 golden 기준과 일치하는지 평가
+
+- 데이터셋: `resources/mail_dataset.jsonl` (108 samples)
 - 실행: `python -m app.evaluation.run_eval_pipeline`
 
 ---
