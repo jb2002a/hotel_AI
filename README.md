@@ -109,10 +109,10 @@ LangSmith 평가를 총 **11회 반복**하며 실패 케이스를 분석하고 
 
 | Metric | AVG |
 |--------|-----|
-| `action_match` | **0.94** |
+| `action_match` | **0.95** |
 | `classification_match` | **0.98** |
-| `extract_match` | **0.92** |
-| `outcome_match` | **0.92** |
+| `extract_match` | **0.94** |
+| `outcome_match` | **0.93** |
 | `policy_queries_presence_match` | **0.93** |
 
 ### Metric 기준
