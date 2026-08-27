@@ -39,6 +39,7 @@ export interface ApprovalPayload {
   email_data: EmailData;
   classification: ManagerClassification;
   extract_data: ExtractData | null;
+  vector_retrieve_results: string[];
   draft_response: string | null;
   action_sqlite: ActionSQLite | null;
   errors: ManagerError[];

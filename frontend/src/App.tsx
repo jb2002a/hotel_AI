@@ -14,11 +14,15 @@ const CURATED_SAMPLE_IDS = [
   "sample_001",
   "sample_002",
   "sample_003",
-  "sample_006",
-  "sample_007",
+  "sample_022",
+  "sample_038",
+  "sample_055",
+  "sample_070",
   "sample_016",
   "sample_020",
   "sample_031",
+  "sample_091",
+  "sample_104",
 ] as const;
 
 const emptyCustomInput = (): CustomEmailInput => ({
@@ -397,9 +401,24 @@ function App() {
                     </section>
                   </div>
 
+                  {payload.vector_retrieve_results.length > 0 && (
+                    <section className="card full-card">
+                      <div className="card-title">
+                        <span>04</span>
+                        <h3>RAG 검색 결과</h3>
+                      </div>
+                      {payload.vector_retrieve_results.map((result, index) => (
+                        <div className="field" key={`${index}-${result.slice(0, 40)}`}>
+                          <span>검색 결과 {index + 1}</span>
+                          <pre className="readonly">{result}</pre>
+                        </div>
+                      ))}
+                    </section>
+                  )}
+
                   <section className="card full-card draft-card">
                     <div className="card-title">
-                      <span>04</span>
+                      <span>05</span>
                       <h3>고객 응답 초안</h3>
                     </div>
                     <pre className="readonly draft-readonly">
@@ -409,7 +428,7 @@ function App() {
 
                   <section className="card full-card">
                     <div className="card-title">
-                      <span>05</span>
+                      <span>06</span>
                       <h3>예약 액션 SQL</h3>
                     </div>
                     <div className="sql-grid">

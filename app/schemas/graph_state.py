@@ -55,6 +55,7 @@ class ManagerApprovalPayload(TypedDict):
     email_data: EmailData
     classification: ManagerClassification
     extract_data: ExtractData | None
+    vector_retrieve_results: list[str]
     draft_response: str | None
     action_sqlite: ActionSQLite | None
     errors: list[ManagerError]
@@ -143,10 +144,12 @@ def _build_manager_email_data(state: EmailAgentState) -> EmailData:
 
 def build_approval_payload(state: EmailAgentState) -> ManagerApprovalPayload:
     """UI/interrupt용 매니저 승인 스냅샷. state에 중복 저장하지 않는다."""
+    vector_results = state.get("vector_retrieve_results") or []
     return {
         "email_data": _build_manager_email_data(state),
         "classification": _build_manager_classification(state),
         "extract_data": state.get("extract_data"),
+        "vector_retrieve_results": [doc.page_content for doc in vector_results],
         "draft_response": state.get("draft_response"),
         "action_sqlite": state.get("action_sqlite"),
         "errors": _build_manager_errors(state),
