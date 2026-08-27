@@ -1,13 +1,3 @@
-langgraph
-langchain
-langchain-openai
-langchain_community
-langchain-chroma
-langchain_huggingface
-langsmith
-dotenv
-sentence-transformers
-llama_cloud
-pytest
-fastapi
-uvicorn[standard]
+# 하위 호환용. Railway/배포는 requirements.txt 를 사용합니다.
+# 로컬 평가·개발 전체 설치: pip install -r requirements-dev.txt
+-r requirements.txt

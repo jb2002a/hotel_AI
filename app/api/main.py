@@ -10,17 +10,23 @@ from app.api.schemas import (
     StartRunRequest,
     SubmitApprovalRequest,
 )
+from app.config.config import frontend_origins
 from app.services import email_service
 
 app = FastAPI(title="Hotel AI Manager Approval API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=frontend_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.get("/health")
+def health() -> dict[str, str]:
+    return {"status": "ok"}
 
 
 @app.get("/mock-emails", response_model=list[MockEmailSummary])

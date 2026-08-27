@@ -146,30 +146,27 @@ LangSmith 평가를 총 **11회 반복**하며 실패 케이스를 분석하고 
 
 ### 환경 변수
 
-프로젝트 루트에 `.env`를 생성합니다.
+루트 [`.env.example`](.env.example) · 프론트 [`frontend/.env.example`](frontend/.env.example) 를 복사해 `.env` 를 만듭니다.
 
 ```env
 OPENAI_API_KEY=
+EMBEDDING_PROVIDER=openai
+FRONTEND_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+
 LANGSMITH_API_KEY=
 LANGCHAIN_TRACING_V2=true
 LANGCHAIN_PROJECT=hotel-ai
-
-# 실메일 수신/발송
-GMAIL_SENDER=
-GMAIL_APP_PASSWORD=
-GMAIL_INBOX_SUBJECT_TAG=[hotel]
-GMAIL_INBOX_MAILBOX=INBOX
-
-# 규정 문서 파싱 (인덱싱 시)
-LLAMA_CLOUD_API_KEY=
 ```
 
-프론트엔드 API 주소(선택):
+프론트엔드 API 주소:
 
 ```env
 # frontend/.env
 VITE_API_BASE=http://127.0.0.1:8000
 ```
+
+로컬 BGE-M3 평가를 쓰려면 `EMBEDDING_PROVIDER=huggingface` 와 `pip install -r requirements-dev.txt` 가 필요합니다.  
+실메일·LlamaCloud 키는 로컬 전용이며 공개 데모 범위 밖입니다.
 
 ### 설치 · 실행
 
@@ -178,11 +175,14 @@ VITE_API_BASE=http://127.0.0.1:8000
 python -m venv .venv
 # Windows: .venv\Scripts\activate
 source .venv/bin/activate
-pip install -r requirement.txt
+pip install -r requirements.txt
 
-# (최초 1회) 예약 mock DB · 규정 벡터 인덱스가 없다면
+# (최초 1회) 예약 mock DB
 python -m app.database.mock_db
-python -m app.rag.split_vector
+
+# 정책 Chroma는 최초 RAG 조회 시 docx에서 자동 부트스트랩됩니다.
+# (선택) LlamaCloud 기반 재인덱싱: pip install -r requirements-dev.txt
+# python -m app.rag.split_vector
 
 uvicorn app.api.main:app --reload --port 8000
 ```
@@ -199,9 +199,54 @@ npm run dev
 ### 평가 · 테스트
 
 ```bash
-python -m app.evaluation.run_eval_pipeline
+pip install -r requirements-dev.txt
+EMBEDDING_PROVIDER=huggingface python -m app.evaluation.run_eval_pipeline
 pytest
 ```
+
+---
+
+## Deploy (Vercel + Railway)
+
+포트폴리오 데모: **프론트=Vercel**, **백엔드=Railway**. Mock/직접 입력만 공개하며, 실제 Gmail 발송과 영구 승인 상태 저장은 포함하지 않습니다.
+
+### Railway (백엔드)
+
+1. GitHub 저장소 연결 후 **Root Directory = 저장소 루트**
+2. 시작 명령은 [`railway.json`](railway.json) 에 정의됨 (`uvicorn ... --port $PORT`)
+3. Variables 예시:
+
+```env
+OPENAI_API_KEY=...
+EMBEDDING_PROVIDER=openai
+OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+FRONTEND_ORIGINS=http://localhost:5173,https://YOUR-FRONTEND.vercel.app
+LANGSMITH_API_KEY=...          # 선택
+LANGCHAIN_TRACING_V2=true      # 선택
+LANGCHAIN_PROJECT=hotel-ai     # 선택
+```
+
+4. Public Domain 생성 후 `https://YOUR-BACKEND.up.railway.app/health` 확인
+5. Vercel URL이 나온 뒤 `FRONTEND_ORIGINS` 를 갱신하고 재배포
+
+### Vercel (프론트)
+
+1. 같은 GitHub 저장소 Import
+2. **Root Directory = `frontend`**
+3. Framework: Vite · Build: `npm run build` · Output: `dist`
+4. Environment Variable:
+
+```env
+VITE_API_BASE=https://YOUR-BACKEND.up.railway.app
+```
+
+5. 배포 후 Railway `FRONTEND_ORIGINS` 에 Vercel URL 추가
+
+### 배포 한계 (데모)
+
+- LangGraph 체크포인트·`_runs` 는 **프로세스 메모리**입니다. Railway 재시작 시 `thread_id` 는 사라집니다. 현재 UI는 실행 결과 조회만 하므로 시연에는 충분합니다.
+- Chroma 인덱스는 디스크에 캐시되며, 재배포 시 비어 있으면 규정 docx에서 다시 생성됩니다.
+- `/inbox-emails`, `/runs/from-email`, 승인 submit·실발송은 공개 데모 UI에서 사용하지 않습니다.
 
 ---
 

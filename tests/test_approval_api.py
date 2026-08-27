@@ -1,5 +1,6 @@
 """Tests for approval web flow API and utilities."""
 
+import importlib
 from unittest.mock import patch
 
 import pytest
@@ -7,9 +8,43 @@ from fastapi.testclient import TestClient
 
 from app.api.main import app
 from app.api import mock_loader
+from app.config import config as app_config
 
 
 client = TestClient(app)
+
+
+def test_health_endpoint():
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
+def test_frontend_origins_default():
+    with patch.dict("os.environ", {}, clear=False):
+        # FRONTEND_ORIGINS 미설정 시 로컬 Vite 기본값
+        env = {k: v for k, v in __import__("os").environ.items() if k != "FRONTEND_ORIGINS"}
+        with patch.dict("os.environ", env, clear=True):
+            importlib.reload(app_config)
+            origins = app_config.frontend_origins()
+    assert "http://localhost:5173" in origins
+    assert "http://127.0.0.1:5173" in origins
+    importlib.reload(app_config)
+
+
+def test_frontend_origins_from_env(monkeypatch):
+    monkeypatch.setenv(
+        "FRONTEND_ORIGINS",
+        "https://demo.vercel.app, http://localhost:5173",
+    )
+    importlib.reload(app_config)
+    try:
+        assert app_config.frontend_origins() == [
+            "https://demo.vercel.app",
+            "http://localhost:5173",
+        ]
+    finally:
+        importlib.reload(app_config)
 
 
 def test_load_mock_emails_returns_list():
