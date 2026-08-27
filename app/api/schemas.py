@@ -12,6 +12,12 @@ class StartRunRequest(BaseModel):
     email_id: str
 
 
+class StartCustomRunRequest(BaseModel):
+    subject: str = Field(min_length=1)
+    body: str = Field(min_length=1)
+    sender_email: str = Field(min_length=1)
+
+
 class InboxEmailSummary(BaseModel):
     uid: str
     message_id: str

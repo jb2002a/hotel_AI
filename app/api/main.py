@@ -5,6 +5,7 @@ from app.api import graph_runner, mock_loader
 from app.api.schemas import (
     InboxEmailSummary,
     MockEmailSummary,
+    StartCustomRunRequest,
     StartEmailRunRequest,
     StartRunRequest,
     SubmitApprovalRequest,
@@ -71,6 +72,28 @@ def start_run(body: StartRunRequest) -> dict:
     initial_state = mock_loader.build_initial_state_from_mock(sample)
     try:
         return graph_runner.start_run(body.email_id, initial_state)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@app.post("/runs/custom")
+def start_custom_run(body: StartCustomRunRequest) -> dict:
+    subject = body.subject.strip()
+    email_body = body.body.strip()
+    sender_email = body.sender_email.strip()
+    if not subject or not email_body or not sender_email:
+        raise HTTPException(
+            status_code=422,
+            detail="subject, body, sender_email은 비어 있을 수 없습니다.",
+        )
+
+    initial_state = mock_loader.build_initial_state_from_custom(
+        subject=subject,
+        body=email_body,
+        sender_email=sender_email,
+    )
+    try:
+        return graph_runner.start_run(f"custom:{sender_email}", initial_state)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 

@@ -1,12 +1,3 @@
-export interface InboxEmailSummary {
-  uid: string;
-  message_id: string;
-  subject: string;
-  sender_email: string;
-  preview: string;
-  received_at: string | null;
-}
-
 export interface MockEmailSummary {
   id: string;
   subject: string;
@@ -60,8 +51,8 @@ export interface StartRunResponse {
   result: Record<string, unknown> | null;
 }
 
-export interface SubmitResponse {
-  thread_id: string;
-  status: string;
-  result: Record<string, unknown>;
+export interface CustomEmailInput {
+  subject: string;
+  body: string;
+  sender_email: string;
 }

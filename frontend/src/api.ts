@@ -1,11 +1,4 @@
-import type {
-  EmailData,
-  ExtractData,
-  InboxEmailSummary,
-  ManagerClassification,
-  StartRunResponse,
-  SubmitResponse,
-} from "./types";
+import type { CustomEmailInput, MockEmailSummary, StartRunResponse } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000";
 
@@ -21,30 +14,20 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export function fetchInboxEmails(): Promise<InboxEmailSummary[]> {
-  return request<InboxEmailSummary[]>("/inbox-emails");
+export function fetchMockEmails(): Promise<MockEmailSummary[]> {
+  return request<MockEmailSummary[]>("/mock-emails");
 }
 
-export function startRunFromEmail(uid: string): Promise<StartRunResponse> {
-  return request<StartRunResponse>("/runs/from-email", {
+export function startRunFromSample(emailId: string): Promise<StartRunResponse> {
+  return request<StartRunResponse>("/runs", {
     method: "POST",
-    body: JSON.stringify({ uid }),
+    body: JSON.stringify({ email_id: emailId }),
   });
 }
 
-export function submitApproval(
-  threadId: string,
-  body: {
-    email_data: EmailData;
-    classification: ManagerClassification;
-    extract_data: ExtractData | null;
-    draft_response: string;
-    action_sqlite: { create_sql: string; update_sql: string; delete_sql: string };
-    manager_comment: string;
-  },
-): Promise<SubmitResponse> {
-  return request<SubmitResponse>(`/runs/${threadId}/submit`, {
+export function startRunFromCustom(input: CustomEmailInput): Promise<StartRunResponse> {
+  return request<StartRunResponse>("/runs/custom", {
     method: "POST",
-    body: JSON.stringify(body),
+    body: JSON.stringify(input),
   });
 }

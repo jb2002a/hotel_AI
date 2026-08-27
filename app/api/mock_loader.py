@@ -43,14 +43,9 @@ def get_mock_email_by_id(email_id: str) -> dict | None:
     return None
 
 
-def build_initial_state_from_mock(sample: dict) -> dict:
-    inp = sample["input"]
+def _empty_initial_state(email_data: dict) -> dict:
     return {
-        "email_data": {
-            "email_subject": inp["subject"],
-            "email_content": inp["body"],
-            "sender_email": inp["sender_email"],
-        },
+        "email_data": email_data,
         "extract_data": None,
         "classification": None,
         "actions": None,
@@ -64,3 +59,26 @@ def build_initial_state_from_mock(sample: dict) -> dict:
         "business_error": None,
         "manager_errors": None,
     }
+
+
+def build_initial_state_from_mock(sample: dict) -> dict:
+    inp = sample["input"]
+    return _empty_initial_state(
+        {
+            "email_subject": inp["subject"],
+            "email_content": inp["body"],
+            "sender_email": inp["sender_email"],
+        }
+    )
+
+
+def build_initial_state_from_custom(
+    *, subject: str, body: str, sender_email: str
+) -> dict:
+    return _empty_initial_state(
+        {
+            "email_subject": subject.strip(),
+            "email_content": body.strip(),
+            "sender_email": sender_email.strip(),
+        }
+    )
